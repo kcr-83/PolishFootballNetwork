@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>PolishFootballNetwork.IntegrationTests</RootNamespace>
+    <AssemblyName>PolishFootballNetwork.IntegrationTests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PolishFootballNetwork.WebApi\PolishFootballNetwork.WebApi.csproj" />
+    <ProjectReference Include="..\..\src\PolishFootballNetwork.Domain\PolishFootballNetwork.Domain.csproj" />
+    <ProjectReference Include="..\..\src\PolishFootballNetwork.Application\PolishFootballNetwork.Application.csproj" />
+    <ProjectReference Include="..\..\src\PolishFootballNetwork.Infrastructure\PolishFootballNetwork.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\PolishFootballNetwork.Persistence\PolishFootballNetwork.Persistence.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

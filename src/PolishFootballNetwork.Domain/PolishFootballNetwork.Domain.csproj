@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>PolishFootballNetwork.Domain</RootNamespace>
+    <AssemblyName>PolishFootballNetwork.Domain</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Domain layer should have no external dependencies -->
+  <ItemGroup>
+    <!-- Only include minimal dependencies if absolutely necessary -->
+  </ItemGroup>
+
+</Project>

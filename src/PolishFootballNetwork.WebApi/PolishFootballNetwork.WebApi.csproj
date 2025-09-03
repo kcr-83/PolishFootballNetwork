@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>PolishFootballNetwork.WebApi</RootNamespace>
+    <AssemblyName>PolishFootballNetwork.WebApi</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Enrichers.Environment" />
+    <PackageReference Include="Serilog.Enrichers.Process" />
+    <PackageReference Include="Serilog.Enrichers.Thread" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
+    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PolishFootballNetwork.Domain\PolishFootballNetwork.Domain.csproj" />
+    <ProjectReference Include="..\PolishFootballNetwork.Application\PolishFootballNetwork.Application.csproj" />
+    <ProjectReference Include="..\PolishFootballNetwork.Infrastructure\PolishFootballNetwork.Infrastructure.csproj" />
+    <ProjectReference Include="..\PolishFootballNetwork.Persistence\PolishFootballNetwork.Persistence.csproj" />
+  </ItemGroup>
+
+</Project>

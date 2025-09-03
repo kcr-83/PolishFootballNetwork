@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: pfn-database
+    environment:
+      POSTGRES_DB: PolishFootballNetwork
+      POSTGRES_USER: pfnuser
+      POSTGRES_PASSWORD: pfnpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - pfn-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pfnuser -d PolishFootballNetwork"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: pfn-backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=database;Database=PolishFootballNetwork;Username=pfnuser;Password=pfnpassword
+      - JwtSettings__SecretKey=YourSuperSecretKeyThatShouldBeAtLeast32CharactersLong
+      - JwtSettings__Issuer=PolishFootballNetwork
+      - JwtSettings__Audience=PolishFootballNetwork
+      - JwtSettings__ExpirationMinutes=60
+    ports:
+      - "5000:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - pfn-network
+    volumes:
+      - ./uploads:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: pfn-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - pfn-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  pfn-network:
+    driver: bridge

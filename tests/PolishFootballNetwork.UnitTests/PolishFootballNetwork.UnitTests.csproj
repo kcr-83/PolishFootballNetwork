@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>PolishFootballNetwork.UnitTests</RootNamespace>
+    <AssemblyName>PolishFootballNetwork.UnitTests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PolishFootballNetwork.Domain\PolishFootballNetwork.Domain.csproj" />
+    <ProjectReference Include="..\..\src\PolishFootballNetwork.Application\PolishFootballNetwork.Application.csproj" />
+    <ProjectReference Include="..\..\src\PolishFootballNetwork.Infrastructure\PolishFootballNetwork.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\PolishFootballNetwork.Persistence\PolishFootballNetwork.Persistence.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

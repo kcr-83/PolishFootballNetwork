@@ -8,7 +8,7 @@ Based on the feature requirements and implementation guide analysis, here are st
 ```
 Create a complete project structure for Polish Football Network with the following requirements:
 - Backend: ASP.NET Core 8.0 Web API with Clean Architecture
-- Frontend: Angular 17+ standalone components
+- Frontend: Angular 20+ standalone components
 - Database: PostgreSQL with Entity Framework Core
 - Authentication: JWT-based with role management
 - File Storage: Local file system with CDN readiness

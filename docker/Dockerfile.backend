@@ -1,0 +1,45 @@
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy project files
+COPY ["src/PolishFootballNetwork.WebApi/PolishFootballNetwork.WebApi.csproj", "src/PolishFootballNetwork.WebApi/"]
+COPY ["src/PolishFootballNetwork.Application/PolishFootballNetwork.Application.csproj", "src/PolishFootballNetwork.Application/"]
+COPY ["src/PolishFootballNetwork.Domain/PolishFootballNetwork.Domain.csproj", "src/PolishFootballNetwork.Domain/"]
+COPY ["src/PolishFootballNetwork.Infrastructure/PolishFootballNetwork.Infrastructure.csproj", "src/PolishFootballNetwork.Infrastructure/"]
+COPY ["src/PolishFootballNetwork.Persistence/PolishFootballNetwork.Persistence.csproj", "src/PolishFootballNetwork.Persistence/"]
+COPY ["src/PolishFootballNetwork.Common/PolishFootballNetwork.Common.csproj", "src/PolishFootballNetwork.Common/"]
+COPY ["Directory.Build.props", "."]
+COPY ["Directory.Packages.props", "."]
+
+# Restore dependencies
+RUN dotnet restore "src/PolishFootballNetwork.WebApi/PolishFootballNetwork.WebApi.csproj"
+
+# Copy source code
+COPY . .
+WORKDIR "/src/src/PolishFootballNetwork.WebApi"
+
+# Build and publish
+RUN dotnet build "PolishFootballNetwork.WebApi.csproj" -c Release -o /app/build
+RUN dotnet publish "PolishFootballNetwork.WebApi.csproj" -c Release -o /app/publish
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+# Create non-root user
+RUN adduser --disabled-password --gecos '' appuser && chown -R appuser /app
+USER appuser
+
+# Copy published app
+COPY --from=build /app/publish .
+
+# Configure environment
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+ENTRYPOINT ["dotnet", "PolishFootballNetwork.WebApi.dll"]
