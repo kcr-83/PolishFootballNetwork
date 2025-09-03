@@ -371,81 +371,116 @@ The Polish Football Network is a three-tier web application designed to visualiz
 
 #### Key Components
 
-- **Authentication**: JWT-based with role management
-- **Data Storage**: JSON file-based for prototype (scalable to database)
-- **File Management**: Logo upload and serving
-- **API Documentation**: Swagger/OpenAPI integration
-- **Logging**: Structured logging with Serilog
-- **Validation**: FluentValidation for input validation
+- **Authentication**: JWT-based with role management and refresh token support
+- **Data Storage**: PostgreSQL database with Entity Framework Core (production-ready)
+- **Architecture**: Clean Architecture with CQRS pattern (manual implementation)
+- **File Management**: Secure logo upload with file validation and optimization
+- **API Documentation**: Swagger/OpenAPI integration with authentication
+- **Logging**: Structured logging with Serilog and request correlation
+- **Validation**: FluentValidation for input validation and business rules
+- **Caching**: Response caching and Redis integration ready
+- **Security**: Rate limiting, CORS, security headers, and audit logging
 
 ### Frontend Architecture (Angular)
 
-#### Module Structure
+#### Component Structure (Angular 17+ Standalone)
 
-- **Core Module**: Authentication, HTTP services, Guards
-- **Shared Module**: Common components, pipes, utilities
-- **Feature Modules**: Graph Viewer, Admin Panel, Authentication
-- **Layout Module**: Navigation, header, footer components
+- **Core Services**: Authentication, HTTP interceptors, Guards with inject() pattern
+- **Shared Components**: Standalone components with Material Design
+- **Feature Areas**: Graph Viewer, Admin Panel, Authentication modules
+- **Layout Components**: Responsive navigation, header, footer with breakpoints
 
 #### Key Technologies
 
-- **Visualization**: Cytoscape.js for graph rendering
-- **UI Framework**: Angular Material for consistent design
-- **State Management**: RxJS observables and services
-- **Routing**: Angular Router with guards
-- **Forms**: Reactive forms with validation
+- **Visualization**: Cytoscape.js for interactive graph rendering with touch support
+- **UI Framework**: Angular Material with custom Polish football theme
+- **State Management**: Angular 17 signals and reactive patterns
+- **Routing**: Angular Router with functional guards and lazy loading
+- **Forms**: Reactive forms with comprehensive validation
+- **Testing**: Jasmine/Karma for unit tests, Cypress for E2E testing
 
-### Database Design (JSON Prototype)
+### Production Database Design (PostgreSQL)
 
 #### Data Entities
 
-```json
-{
-  "clubs": [
-    {
-      "id": "string",
-      "name": "string",
-      "shortName": "string", 
-      "league": "Ekstraklasa|Fortuna1Liga|European",
-      "country": "string",
-      "city": "string",
-      "logoPath": "string",
-      "position": {"x": "number", "y": "number"},
-      "founded": "number",
-      "stadium": "string",
-      "website": "string",
-      "isActive": "boolean",
-      "createdAt": "datetime",
-      "updatedAt": "datetime"
-    }
-  ],
-  "connections": [
-    {
-      "id": "string",
-      "fromClubId": "string",
-      "toClubId": "string",
-      "type": "Alliance|Rivalry|Friendship",
-      "strength": "Weak|Medium|Strong",
-      "description": "string",
-      "startDate": "date",
-      "isActive": "boolean",
-      "isOfficial": "boolean",
-      "createdAt": "datetime",
-      "updatedAt": "datetime"
-    }
-  ],
-  "users": [
-    {
-      "id": "string",
-      "username": "string",
-      "passwordHash": "string",
-      "role": "Admin",
-      "createdAt": "datetime",
-      "lastLoginAt": "datetime"
-    }
-  ]
-}
+```sql
+-- Core Tables
+CREATE TABLE clubs (
+    id UUID PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    short_name VARCHAR(10),
+    slug VARCHAR(100) UNIQUE,
+    league league_type NOT NULL,
+    country VARCHAR(50) DEFAULT 'Poland',
+    city VARCHAR(50) NOT NULL,
+    region VARCHAR(50),
+    logo_path VARCHAR(500),
+    position_x DECIMAL(10,6),
+    position_y DECIMAL(10,6),
+    founded INTEGER,
+    stadium VARCHAR(100),
+    website VARCHAR(255),
+    official_colors VARCHAR(100),
+    description TEXT,
+    is_active BOOLEAN DEFAULT true,
+    is_verified BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE connections (
+    id UUID PRIMARY KEY,
+    from_club_id UUID REFERENCES clubs(id),
+    to_club_id UUID REFERENCES clubs(id),
+    connection_type connection_type NOT NULL,
+    strength connection_strength DEFAULT 'Medium',
+    title VARCHAR(100),
+    description TEXT,
+    start_date DATE,
+    is_active BOOLEAN DEFAULT true,
+    is_official BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE users (
+    id UUID PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role user_role DEFAULT 'Admin',
+    is_active BOOLEAN DEFAULT true,
+    last_login_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE files (
+    id UUID PRIMARY KEY,
+    original_filename VARCHAR(255) NOT NULL,
+    stored_filename VARCHAR(255) UNIQUE,
+    file_path VARCHAR(500) NOT NULL,
+    file_type file_type NOT NULL,
+    file_size_bytes BIGINT,
+    entity_type VARCHAR(50),
+    entity_id UUID,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Enums
+CREATE TYPE league_type AS ENUM ('Ekstraklasa', 'Fortuna1Liga', 'EuropeanClub');
+CREATE TYPE connection_type AS ENUM ('Alliance', 'Rivalry', 'Friendship');
+CREATE TYPE connection_strength AS ENUM ('Weak', 'Medium', 'Strong');
+CREATE TYPE user_role AS ENUM ('Admin', 'SuperAdmin');
+CREATE TYPE file_type AS ENUM ('LOGO_SVG', 'IMAGE_PNG', 'IMAGE_JPG');
 ```
+
+#### Advanced Features
+
+- **Audit Logging**: Complete activity tracking with user context and change history
+- **Graph Metrics**: Network analysis with centrality scores and connectivity metrics
+- **File Management**: Secure upload with validation, optimization, and cleanup
+- **System Configuration**: Flexible settings management with validation
+- **Performance Monitoring**: Request logging, timing, and health checks
 
 ---
 
