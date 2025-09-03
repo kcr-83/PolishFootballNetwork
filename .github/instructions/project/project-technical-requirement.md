@@ -1,0 +1,1 @@
+System should be developed using .Net Core WebApi for the backend API services and Angular for the frontend user interface.
