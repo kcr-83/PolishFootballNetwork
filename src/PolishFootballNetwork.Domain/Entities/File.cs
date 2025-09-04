@@ -1,8 +1,8 @@
+namespace PolishFootballNetwork.Domain.Entities;
+
 using PolishFootballNetwork.Domain.Common;
 using PolishFootballNetwork.Domain.Enums;
 using PolishFootballNetwork.Domain.Exceptions;
-
-namespace PolishFootballNetwork.Domain.Entities;
 
 /// <summary>
 /// Represents a file uploaded to the Polish Football Network system.
@@ -46,6 +46,16 @@ public class File : Entity
     public int UploadedByUserId { get; private set; }
 
     /// <summary>
+    /// Gets the identifier of the associated entity (if any).
+    /// </summary>
+    public int? EntityId { get; private set; }
+
+    /// <summary>
+    /// Gets the type of the associated entity (if any).
+    /// </summary>
+    public string? EntityType { get; private set; }
+
+    /// <summary>
     /// Gets or sets the description of the file.
     /// </summary>
     public string? Description { get; private set; }
@@ -56,6 +66,16 @@ public class File : Entity
     public string? Tags { get; private set; }
 
     /// <summary>
+    /// Gets the alternative text for accessibility.
+    /// </summary>
+    public string? AlternativeText { get; private set; }
+
+    /// <summary>
+    /// Gets the thumbnail path for image files.
+    /// </summary>
+    public string? ThumbnailPath { get; private set; }
+
+    /// <summary>
     /// Gets a value indicating whether the file is publicly accessible.
     /// </summary>
     public bool IsPublic { get; private set; }
@@ -64,6 +84,21 @@ public class File : Entity
     /// Gets the checksum (hash) of the file for integrity verification.
     /// </summary>
     public string? Checksum { get; private set; }
+
+    /// <summary>
+    /// Gets the number of times the file has been downloaded.
+    /// </summary>
+    public int DownloadCount { get; private set; }
+
+    /// <summary>
+    /// Gets the date and time when the file was last accessed.
+    /// </summary>
+    public DateTime? LastAccessedAt { get; private set; }
+
+    /// <summary>
+    /// Gets the file metadata as JSON.
+    /// </summary>
+    public string? Metadata { get; private set; }
 
     /// <summary>
     /// Gets the user who uploaded the file (navigation property).
@@ -176,6 +211,79 @@ public class File : Entity
             Checksum = checksum;
             UpdateModifiedAt();
         }
+    }
+
+    /// <summary>
+    /// Updates the entity association of the file.
+    /// </summary>
+    /// <param name="entityId">The identifier of the associated entity.</param>
+    /// <param name="entityType">The type of the associated entity.</param>
+    public void UpdateEntityAssociation(int? entityId, string? entityType)
+    {
+        if (EntityId != entityId || EntityType != entityType)
+        {
+            EntityId = entityId;
+            EntityType = entityType;
+            UpdateModifiedAt();
+        }
+    }
+
+    /// <summary>
+    /// Updates the alternative text of the file.
+    /// </summary>
+    /// <param name="alternativeText">The new alternative text.</param>
+    public void UpdateAlternativeText(string? alternativeText)
+    {
+        if (AlternativeText != alternativeText)
+        {
+            AlternativeText = alternativeText;
+            UpdateModifiedAt();
+        }
+    }
+
+    /// <summary>
+    /// Updates the thumbnail path of the file.
+    /// </summary>
+    /// <param name="thumbnailPath">The new thumbnail path.</param>
+    public void UpdateThumbnailPath(string? thumbnailPath)
+    {
+        if (ThumbnailPath != thumbnailPath)
+        {
+            ThumbnailPath = thumbnailPath;
+            UpdateModifiedAt();
+        }
+    }
+
+    /// <summary>
+    /// Updates the metadata of the file.
+    /// </summary>
+    /// <param name="metadata">The new metadata as JSON.</param>
+    public void UpdateMetadata(string? metadata)
+    {
+        if (Metadata != metadata)
+        {
+            Metadata = metadata;
+            UpdateModifiedAt();
+        }
+    }
+
+    /// <summary>
+    /// Records a download event for the file.
+    /// </summary>
+    public void RecordDownload()
+    {
+        DownloadCount++;
+        LastAccessedAt = DateTime.UtcNow;
+        UpdateModifiedAt();
+    }
+
+    /// <summary>
+    /// Records an access event for the file.
+    /// </summary>
+    public void RecordAccess()
+    {
+        LastAccessedAt = DateTime.UtcNow;
+        UpdateModifiedAt();
     }
 
     /// <summary>

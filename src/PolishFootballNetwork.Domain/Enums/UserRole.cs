@@ -6,12 +6,22 @@ namespace PolishFootballNetwork.Domain.Enums;
 public enum UserRole
 {
     /// <summary>
-    /// Standard administrator with basic management capabilities.
+    /// Regular user with basic access to the system.
     /// </summary>
-    Admin = 1,
+    User = 1,
 
     /// <summary>
-    /// Super administrator with full system access and advanced management capabilities.
+    /// Moderator with additional content management capabilities.
     /// </summary>
-    SuperAdmin = 2
+    Moderator = 2,
+
+    /// <summary>
+    /// Administrator with advanced management capabilities.
+    /// </summary>
+    Administrator = 3,
+
+    /// <summary>
+    /// Super administrator with full system access.
+    /// </summary>
+    SuperAdmin = 4
 }

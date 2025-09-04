@@ -1,5 +1,6 @@
 using PolishFootballNetwork.Domain.Entities;
 using PolishFootballNetwork.Domain.Enums;
+using File = PolishFootballNetwork.Domain.Entities.File;
 
 namespace PolishFootballNetwork.Domain.Repositories;
 

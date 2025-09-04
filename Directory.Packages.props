@@ -3,89 +3,78 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
-
   <!-- Package version variables -->
   <PropertyGroup>
-    <MicrosoftExtensionsVersion>8.0.0</MicrosoftExtensionsVersion>
-    <AspNetCoreVersion>8.0.0</AspNetCoreVersion>
+    <MicrosoftExtensionsVersion>9.0.8</MicrosoftExtensionsVersion>
+    <AspNetCoreVersion>9.0.8</AspNetCoreVersion>
     <EntityFrameworkCoreVersion>8.0.0</EntityFrameworkCoreVersion>
     <SerilogVersion>3.1.1</SerilogVersion>
-    <SerilogAspNetCoreVersion>8.0.0</SerilogAspNetCoreVersion>
-    
+    <SerilogAspNetCoreVersion>9.0.0</SerilogAspNetCoreVersion>
     <!-- Analysis tools versions -->
     <MicrosoftCodeAnalysisNetAnalyzersVersion>8.0.0</MicrosoftCodeAnalysisNetAnalyzersVersion>
     <StyleCopAnalyzersVersion>1.2.0-beta.507</StyleCopAnalyzersVersion>
     <RoslynatorAnalyzersVersion>4.6.2</RoslynatorAnalyzersVersion>
-    
     <!-- Testing framework versions -->
-    <XunitVersion>2.6.2</XunitVersion>
-    <XunitRunnerVisualStudioVersion>2.5.4</XunitRunnerVisualStudioVersion>
-    <MicrosoftNETTestSdkVersion>17.8.0</MicrosoftNETTestSdkVersion>
-    <FluentAssertionsVersion>6.12.0</FluentAssertionsVersion>
-    <MoqVersion>4.20.70</MoqVersion>
-    <CoverletCollectorVersion>6.0.0</CoverletCollectorVersion>
+    <XunitVersion>2.9.3</XunitVersion>
+    <XunitRunnerVisualStudioVersion>3.1.4</XunitRunnerVisualStudioVersion>
+    <MicrosoftNETTestSdkVersion>17.14.1</MicrosoftNETTestSdkVersion>
+    <FluentAssertionsVersion>7.2.0</FluentAssertionsVersion>
+    <MoqVersion>4.20.72</MoqVersion>
+    <CoverletCollectorVersion>6.0.4</CoverletCollectorVersion>
   </PropertyGroup>
-
   <!-- Package versions -->
   <ItemGroup>
     <!-- Microsoft Extensions -->
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsVersion)" />
-
     <!-- ASP.NET Core -->
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(AspNetCoreVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(AspNetCoreVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(AspNetCoreVersion)" />
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.4" />
     <!-- Entity Framework Core -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(EntityFrameworkCoreVersion)" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(EntityFrameworkCoreVersion)" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="$(EntityFrameworkCoreVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.8" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(EntityFrameworkCoreVersion)" />
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(EntityFrameworkCoreVersion)" />
-
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.8" />
     <!-- Authentication & Security -->
-    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="7.0.3" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication" Version="$(AspNetCoreVersion)" />
     <PackageVersion Include="BCrypt.Net-Next" Version="4.0.3" />
-
     <!-- Validation -->
-    <PackageVersion Include="FluentValidation" Version="11.8.0" />
-    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.8.0" />
-
+    <PackageVersion Include="FluentValidation" Version="12.0.0" />
+    <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.1" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
     <!-- Logging -->
-    <PackageVersion Include="Serilog" Version="$(SerilogVersion)" />
+    <PackageVersion Include="Serilog" Version="4.3.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="$(SerilogAspNetCoreVersion)" />
-    <PackageVersion Include="Serilog.Sinks.Console" Version="5.0.0" />
-    <PackageVersion Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageVersion Include="Serilog.Enrichers.Environment" Version="2.3.0" />
-    <PackageVersion Include="Serilog.Enrichers.Process" Version="2.0.2" />
-    <PackageVersion Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageVersion Include="Serilog.Enrichers.Process" Version="3.0.0" />
+    <PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     <!-- HTTP Client -->
     <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Polly" Version="8.2.0" />
-
     <!-- Caching -->
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="$(MicrosoftExtensionsVersion)" />
-
     <!-- Health Checks -->
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.0" />
-
+    <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
     <!-- Testing -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)" />
     <PackageVersion Include="xunit" Version="$(XunitVersion)" />
@@ -93,20 +82,19 @@
     <PackageVersion Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
     <PackageVersion Include="Moq" Version="$(MoqVersion)" />
     <PackageVersion Include="coverlet.collector" Version="$(CoverletCollectorVersion)" />
-    <PackageVersion Include="Testcontainers" Version="3.6.0" />
-    <PackageVersion Include="Testcontainers.PostgreSql" Version="3.6.0" />
-
+    <PackageVersion Include="Testcontainers" Version="4.7.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.7.0" />
+    <PackageVersion Include="Microsoft.Playwright" Version="1.55.0" />
+    <PackageVersion Include="Microsoft.Playwright.NUnit" Version="1.55.0" />
     <!-- Code Analysis -->
-    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="$(MicrosoftCodeAnalysisNetAnalyzersVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
     <PackageVersion Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersVersion)" />
-    <PackageVersion Include="Roslynator.Analyzers" Version="$(RoslynatorAnalyzersVersion)" />
-
+    <PackageVersion Include="Roslynator.Analyzers" Version="4.14.0" />
     <!-- File Processing -->
-    <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.0" />
-    <PackageVersion Include="Svg" Version="3.4.4" />
-
+    <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.11" />
+    <PackageVersion Include="Svg" Version="3.4.7" />
     <!-- Utilities -->
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="System.Text.Json" Version="8.0.0" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.8" />
   </ItemGroup>
 </Project>

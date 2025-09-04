@@ -184,7 +184,7 @@ public class Connection : Entity
     /// <returns>The duration of the connection, or null if no active period is specified.</returns>
     public TimeSpan? GetDuration()
     {
-        return ActivePeriod?.GetDuration();
+        return ActivePeriod?.Duration;
     }
 
     /// <summary>
@@ -232,23 +232,6 @@ public class Connection : Entity
         throw new BusinessRuleValidationException($"Club {clubId} is not part of this connection.", nameof(clubId));
     }
 
-    /// <summary>
-    /// Determines if this connection represents a bidirectional relationship.
-    /// </summary>
-    /// <returns>true if the connection is bidirectional based on its type; otherwise, false.</returns>
-    public bool IsBidirectional()
-    {
-        return Type switch
-        {
-            ConnectionType.Partnership => true,
-            ConnectionType.Rivalry => true,
-            ConnectionType.Friendship => true,
-            ConnectionType.PlayerTransfer => false,
-            ConnectionType.CoachTransfer => false,
-            ConnectionType.LoanAgreement => false,
-            _ => false
-        };
-    }
 
     private static void ValidateClubIds(int sourceClubId, int targetClubId)
     {

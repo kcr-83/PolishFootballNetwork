@@ -6,9 +6,9 @@ namespace PolishFootballNetwork.Domain.Enums;
 public enum ConnectionType
 {
     /// <summary>
-    /// Clubs that have a formal or informal alliance, partnership, or cooperation.
+    /// Clubs that have a formal or informal cooperation, partnership, or collaboration.
     /// </summary>
-    Alliance = 1,
+    Cooperation = 1,
 
     /// <summary>
     /// Clubs that have a strong competitive rivalry, often historical or regional.

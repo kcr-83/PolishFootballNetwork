@@ -6,27 +6,47 @@ namespace PolishFootballNetwork.Domain.Enums;
 public enum FileType
 {
     /// <summary>
-    /// Club logo in SVG format - preferred format for scalability.
+    /// Generic document file (PDF, DOC, etc.).
     /// </summary>
-    LOGO_SVG = 1,
+    Document = 1,
 
     /// <summary>
-    /// Club logo or image in PNG format.
+    /// Image file (PNG, JPG, SVG, WebP, etc.).
     /// </summary>
-    IMAGE_PNG = 2,
+    Image = 2,
 
     /// <summary>
-    /// Club logo or image in JPG/JPEG format.
+    /// Video file (MP4, AVI, MOV, etc.).
     /// </summary>
-    IMAGE_JPG = 3,
+    Video = 3,
 
     /// <summary>
-    /// Generic document file.
+    /// Audio file (MP3, WAV, OGG, etc.).
     /// </summary>
-    DOCUMENT = 4,
+    Audio = 4,
 
     /// <summary>
-    /// Club logo or image in WebP format - modern optimized format.
+    /// Archive file (ZIP, RAR, 7Z, etc.).
     /// </summary>
-    IMAGE_WEBP = 5
+    Archive = 5,
+
+    /// <summary>
+    /// Spreadsheet file (XLS, CSV, etc.).
+    /// </summary>
+    Spreadsheet = 6,
+
+    /// <summary>
+    /// Presentation file (PPT, PPTX, etc.).
+    /// </summary>
+    Presentation = 7,
+
+    /// <summary>
+    /// Text file (TXT, RTF, etc.).
+    /// </summary>
+    Text = 8,
+
+    /// <summary>
+    /// Other/unknown file type.
+    /// </summary>
+    Other = 99
 }

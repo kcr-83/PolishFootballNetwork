@@ -20,9 +20,14 @@ public class Club : Entity
     public string Name { get; private set; }
 
     /// <summary>
-    /// Gets the city where the club is located.
+    /// Gets the short name or abbreviation of the club.
     /// </summary>
-    public string City { get; private set; }
+    public string? ShortName { get; private set; }
+
+    /// <summary>
+    /// Gets the URL-friendly slug for the club.
+    /// </summary>
+    public string Slug { get; private set; }
 
     /// <summary>
     /// Gets the league type in which the club participates.
@@ -30,34 +35,84 @@ public class Club : Entity
     public LeagueType League { get; private set; }
 
     /// <summary>
+    /// Gets the country where the club is located.
+    /// </summary>
+    public string Country { get; private set; }
+
+    /// <summary>
+    /// Gets the city where the club is located.
+    /// </summary>
+    public string City { get; private set; }
+
+    /// <summary>
+    /// Gets the region where the club is located.
+    /// </summary>
+    public string? Region { get; private set; }
+
+    /// <summary>
+    /// Gets the file path to the club's logo.
+    /// </summary>
+    public string? LogoPath { get; private set; }
+
+    /// <summary>
     /// Gets the position of the club on the visualization map.
     /// </summary>
     public Point2D Position { get; private set; }
 
     /// <summary>
-    /// Gets or sets the description of the club.
+    /// Gets the year when the club was founded.
     /// </summary>
-    public string? Description { get; private set; }
+    public int? Founded { get; private set; }
 
     /// <summary>
-    /// Gets or sets the URL of the club's logo image.
+    /// Gets the name of the club's home stadium.
     /// </summary>
-    public string? LogoUrl { get; private set; }
+    public string? Stadium { get; private set; }
 
     /// <summary>
-    /// Gets or sets the club's official website URL.
+    /// Gets the club's official website URL.
     /// </summary>
     public string? Website { get; private set; }
 
     /// <summary>
-    /// Gets or sets the year when the club was founded.
+    /// Gets the club's primary colors.
     /// </summary>
-    public int? FoundedYear { get; private set; }
+    public string? Colors { get; private set; }
 
     /// <summary>
-    /// Gets or sets the name of the club's home stadium.
+    /// Gets the description of the club.
     /// </summary>
-    public string? Stadium { get; private set; }
+    public string? Description { get; private set; }
+
+    /// <summary>
+    /// Gets the club's nickname.
+    /// </summary>
+    public string? Nickname { get; private set; }
+
+    /// <summary>
+    /// Gets the club's motto.
+    /// </summary>
+    public string? Motto { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the club is active.
+    /// </summary>
+    public bool IsActive { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the club is verified.
+    /// </summary>
+    public bool IsVerified { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the club is featured.
+    /// </summary>
+    public bool IsFeatured { get; private set; }
+
+    /// <summary>
+    /// Gets additional metadata for the club.
+    /// </summary>
+    public string? Metadata { get; private set; }
 
     /// <summary>
     /// Gets a read-only collection of connections from this club to other clubs.
@@ -70,24 +125,36 @@ public class Club : Entity
     private Club() : base()
     {
         Name = string.Empty;
+        Slug = string.Empty;
+        Country = string.Empty;
         City = string.Empty;
-        Position = Point2D.Zero;
+        Position = Point2D.Origin();
+        IsActive = true;
+        IsVerified = false;
+        IsFeatured = false;
     }
 
     /// <summary>
     /// Initializes a new instance of the Club class with the specified parameters.
     /// </summary>
     /// <param name="name">The name of the club.</param>
-    /// <param name="city">The city where the club is located.</param>
+    /// <param name="slug">The URL-friendly slug for the club.</param>
     /// <param name="league">The league type in which the club participates.</param>
+    /// <param name="country">The country where the club is located.</param>
+    /// <param name="city">The city where the club is located.</param>
     /// <param name="position">The position of the club on the visualization map.</param>
     /// <exception cref="BusinessRuleValidationException">Thrown when validation fails.</exception>
-    public Club(string name, string city, LeagueType league, Point2D position)
+    public Club(string name, string slug, LeagueType league, string country, string city, Point2D position)
     {
         SetName(name);
-        SetCity(city);
+        SetSlug(slug);
         League = league;
+        SetCountry(country);
+        SetCity(city);
         Position = position ?? throw new ArgumentNullException(nameof(position));
+        IsActive = true;
+        IsVerified = false;
+        IsFeatured = false;
         
         AddDomainEvent(new ClubCreatedEvent(Id, Name, League.ToString()));
     }
@@ -159,6 +226,238 @@ public class Club : Entity
     }
 
     /// <summary>
+    /// Updates the club's short name.
+    /// </summary>
+    /// <param name="shortName">The new short name for the club.</param>
+    public void UpdateShortName(string? shortName)
+    {
+        if (ShortName != shortName)
+        {
+            ShortName = shortName;
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(ShortName) }));
+        }
+    }
+
+    /// <summary>
+    /// Updates the club's slug.
+    /// </summary>
+    /// <param name="slug">The new slug for the club.</param>
+    /// <exception cref="BusinessRuleValidationException">Thrown when the slug is invalid.</exception>
+    public void UpdateSlug(string slug)
+    {
+        string oldSlug = Slug;
+        SetSlug(slug);
+        
+        if (oldSlug != Slug)
+        {
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(Slug) }));
+        }
+    }
+
+    /// <summary>
+    /// Updates the club's country.
+    /// </summary>
+    /// <param name="country">The new country for the club.</param>
+    /// <exception cref="BusinessRuleValidationException">Thrown when the country is invalid.</exception>
+    public void UpdateCountry(string country)
+    {
+        string oldCountry = Country;
+        SetCountry(country);
+        
+        if (oldCountry != Country)
+        {
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(Country) }));
+        }
+    }
+
+    /// <summary>
+    /// Updates the club's region.
+    /// </summary>
+    /// <param name="region">The new region for the club.</param>
+    public void UpdateRegion(string? region)
+    {
+        if (Region != region)
+        {
+            Region = region;
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(Region) }));
+        }
+    }
+
+    /// <summary>
+    /// Updates the club's logo path.
+    /// </summary>
+    /// <param name="logoPath">The new logo path for the club.</param>
+    public void UpdateLogoPath(string? logoPath)
+    {
+        if (LogoPath != logoPath)
+        {
+            LogoPath = logoPath;
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(LogoPath) }));
+        }
+    }
+
+    /// <summary>
+    /// Updates the year when the club was founded.
+    /// </summary>
+    /// <param name="founded">The year when the club was founded.</param>
+    /// <exception cref="BusinessRuleValidationException">Thrown when the founded year is invalid.</exception>
+    public void UpdateFounded(int? founded)
+    {
+        if (founded.HasValue && (founded.Value < 1800 || founded.Value > DateTime.UtcNow.Year))
+        {
+            throw new BusinessRuleValidationException(
+                $"Founded year must be between 1800 and {DateTime.UtcNow.Year}.", 
+                nameof(Founded));
+        }
+
+        if (Founded != founded)
+        {
+            Founded = founded;
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(Founded) }));
+        }
+    }
+
+    /// <summary>
+    /// Updates the club's colors.
+    /// </summary>
+    /// <param name="colors">The new colors for the club.</param>
+    public void UpdateColors(string? colors)
+    {
+        if (Colors != colors)
+        {
+            Colors = colors;
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(Colors) }));
+        }
+    }
+
+    /// <summary>
+    /// Updates the club's nickname.
+    /// </summary>
+    /// <param name="nickname">The new nickname for the club.</param>
+    public void UpdateNickname(string? nickname)
+    {
+        if (Nickname != nickname)
+        {
+            Nickname = nickname;
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(Nickname) }));
+        }
+    }
+
+    /// <summary>
+    /// Updates the club's motto.
+    /// </summary>
+    /// <param name="motto">The new motto for the club.</param>
+    public void UpdateMotto(string? motto)
+    {
+        if (Motto != motto)
+        {
+            Motto = motto;
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(Motto) }));
+        }
+    }
+
+    /// <summary>
+    /// Updates the club's metadata.
+    /// </summary>
+    /// <param name="metadata">The new metadata for the club.</param>
+    public void UpdateMetadata(string? metadata)
+    {
+        if (Metadata != metadata)
+        {
+            Metadata = metadata;
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(Metadata) }));
+        }
+    }
+
+    /// <summary>
+    /// Activates the club.
+    /// </summary>
+    public void Activate()
+    {
+        if (!IsActive)
+        {
+            IsActive = true;
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(IsActive) }));
+        }
+    }
+
+    /// <summary>
+    /// Deactivates the club.
+    /// </summary>
+    public void Deactivate()
+    {
+        if (IsActive)
+        {
+            IsActive = false;
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(IsActive) }));
+        }
+    }
+
+    /// <summary>
+    /// Verifies the club.
+    /// </summary>
+    public void Verify()
+    {
+        if (!IsVerified)
+        {
+            IsVerified = true;
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(IsVerified) }));
+        }
+    }
+
+    /// <summary>
+    /// Unverifies the club.
+    /// </summary>
+    public void Unverify()
+    {
+        if (IsVerified)
+        {
+            IsVerified = false;
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(IsVerified) }));
+        }
+    }
+
+    /// <summary>
+    /// Features the club.
+    /// </summary>
+    public void Feature()
+    {
+        if (!IsFeatured)
+        {
+            IsFeatured = true;
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(IsFeatured) }));
+        }
+    }
+
+    /// <summary>
+    /// Unfeatures the club.
+    /// </summary>
+    public void Unfeature()
+    {
+        if (IsFeatured)
+        {
+            IsFeatured = false;
+            UpdateModifiedAt();
+            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(IsFeatured) }));
+        }
+    }
+
+    /// <summary>
     /// Updates the club's description.
     /// </summary>
     /// <param name="description">The new description for the club.</param>
@@ -173,20 +472,6 @@ public class Club : Entity
     }
 
     /// <summary>
-    /// Updates the club's logo URL.
-    /// </summary>
-    /// <param name="logoUrl">The new logo URL for the club.</param>
-    public void UpdateLogoUrl(string? logoUrl)
-    {
-        if (LogoUrl != logoUrl)
-        {
-            LogoUrl = logoUrl;
-            UpdateModifiedAt();
-            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(LogoUrl) }));
-        }
-    }
-
-    /// <summary>
     /// Updates the club's website URL.
     /// </summary>
     /// <param name="website">The new website URL for the club.</param>
@@ -197,28 +482,6 @@ public class Club : Entity
             Website = website;
             UpdateModifiedAt();
             AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(Website) }));
-        }
-    }
-
-    /// <summary>
-    /// Updates the year when the club was founded.
-    /// </summary>
-    /// <param name="foundedYear">The year when the club was founded.</param>
-    /// <exception cref="BusinessRuleValidationException">Thrown when the founded year is invalid.</exception>
-    public void UpdateFoundedYear(int? foundedYear)
-    {
-        if (foundedYear.HasValue && (foundedYear.Value < 1800 || foundedYear.Value > DateTime.UtcNow.Year))
-        {
-            throw new BusinessRuleValidationException(
-                $"Founded year must be between 1800 and {DateTime.UtcNow.Year}.", 
-                nameof(FoundedYear));
-        }
-
-        if (FoundedYear != foundedYear)
-        {
-            FoundedYear = foundedYear;
-            UpdateModifiedAt();
-            AddDomainEvent(new ClubUpdatedEvent(Id, Name, new[] { nameof(FoundedYear) }));
         }
     }
 
@@ -323,5 +586,36 @@ public class Club : Entity
             throw new BusinessRuleValidationException("Club city cannot exceed 50 characters.", nameof(City));
 
         City = city.Trim();
+    }
+
+    private void SetSlug(string slug)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+            throw new BusinessRuleValidationException("Club slug cannot be empty.", nameof(Slug));
+
+        if (slug.Length > 100)
+            throw new BusinessRuleValidationException("Club slug cannot exceed 100 characters.", nameof(Slug));
+
+        // Validate slug format (letters, numbers, hyphens only)
+        if (!IsValidSlug(slug))
+            throw new BusinessRuleValidationException("Club slug can only contain letters, numbers, and hyphens.", nameof(Slug));
+
+        Slug = slug.Trim().ToLowerInvariant();
+    }
+
+    private void SetCountry(string country)
+    {
+        if (string.IsNullOrWhiteSpace(country))
+            throw new BusinessRuleValidationException("Club country cannot be empty.", nameof(Country));
+
+        if (country.Length > 50)
+            throw new BusinessRuleValidationException("Club country cannot exceed 50 characters.", nameof(Country));
+
+        Country = country.Trim();
+    }
+
+    private static bool IsValidSlug(string slug)
+    {
+        return slug.All(c => char.IsLetterOrDigit(c) || c == '-');
     }
 }
