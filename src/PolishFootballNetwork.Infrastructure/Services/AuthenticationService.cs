@@ -4,7 +4,9 @@ using Microsoft.IdentityModel.Tokens;
 using PolishFootballNetwork.Application.Common.Interfaces;
 using PolishFootballNetwork.Application.Common.Models;
 using PolishFootballNetwork.Domain.Entities;
+using PolishFootballNetwork.Domain.Repositories;
 using PolishFootballNetwork.Infrastructure.Configuration;
+using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -13,23 +15,41 @@ using System.Text;
 namespace PolishFootballNetwork.Infrastructure.Services;
 
 /// <summary>
+/// Represents refresh token information stored in memory.
+/// </summary>
+internal class RefreshTokenInfo
+{
+    public int UserId { get; set; }
+    public DateTime ExpiresAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public bool IsRevoked { get; set; }
+}
+
+/// <summary>
 /// Authentication service that handles JWT token operations and password management.
 /// </summary>
 public class AuthenticationService : IAuthenticationService
 {
     private readonly JwtOptions jwtOptions;
     private readonly ILogger<AuthenticationService> logger;
+    private readonly IUserRepository userRepository;
     private readonly TokenValidationParameters tokenValidationParameters;
+    private static readonly ConcurrentDictionary<string, RefreshTokenInfo> RefreshTokens = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AuthenticationService"/> class.
     /// </summary>
     /// <param name="jwtOptions">JWT configuration options.</param>
     /// <param name="logger">Logger instance.</param>
-    public AuthenticationService(IOptions<JwtOptions> jwtOptions, ILogger<AuthenticationService> logger)
+    /// <param name="userRepository">User repository for refresh token validation.</param>
+    public AuthenticationService(
+        IOptions<JwtOptions> jwtOptions,
+        ILogger<AuthenticationService> logger,
+        IUserRepository userRepository)
     {
         this.jwtOptions = jwtOptions.Value;
         this.logger = logger;
+        this.userRepository = userRepository;
 
         this.tokenValidationParameters = new TokenValidationParameters
         {
@@ -70,10 +90,7 @@ public class AuthenticationService : IAuthenticationService
         };
 
         // Add role claims if user has roles
-        if (!string.IsNullOrEmpty(user.Role))
-        {
-            claims.Add(new Claim(ClaimTypes.Role, user.Role));
-        }
+        claims.Add(new Claim(ClaimTypes.Role, user.Role.ToString()));
 
         var expiresAt = DateTime.UtcNow.Add(this.jwtOptions.AccessTokenExpiration);
         
@@ -85,7 +102,16 @@ public class AuthenticationService : IAuthenticationService
             signingCredentials: credentials);
 
         var tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
-        var refreshToken = this.GenerateRefreshToken();
+        var refreshToken = GenerateRefreshToken();
+
+        // Store refresh token with expiration
+        RefreshTokens[refreshToken] = new RefreshTokenInfo
+        {
+            UserId = user.Id,
+            ExpiresAt = DateTime.UtcNow.Add(this.jwtOptions.RefreshTokenExpiration),
+            CreatedAt = DateTime.UtcNow,
+            IsRevoked = false
+        };
 
         this.logger.LogInformation("JWT token generated for user: {UserId}", user.Id);
 
@@ -149,7 +175,7 @@ public class AuthenticationService : IAuthenticationService
     /// </summary>
     /// <param name="token">The JWT token to validate.</param>
     /// <returns>The token validation result.</returns>
-    public async Task<TokenValidationResult> ValidateTokenAsync(string token)
+    public async Task<Application.Common.Models.TokenValidationResult> ValidateTokenAsync(string token)
     {
         await Task.CompletedTask; // Make async for future extensibility
 
@@ -163,16 +189,16 @@ public class AuthenticationService : IAuthenticationService
 
             if (validatedToken is not JwtSecurityToken jwtToken)
             {
-                return TokenValidationResult.Failure("Invalid token format");
+                return Application.Common.Models.TokenValidationResult.Failure("Invalid token format");
             }
 
             var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
             var emailClaim = principal.FindFirst(ClaimTypes.Email);
             var roleClaims = principal.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
 
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
             {
-                return TokenValidationResult.Failure("Invalid user ID in token");
+                return Application.Common.Models.TokenValidationResult.Failure("Invalid user ID in token");
             }
 
             var email = emailClaim?.Value ?? string.Empty;
@@ -180,27 +206,27 @@ public class AuthenticationService : IAuthenticationService
 
             this.logger.LogDebug("Token validated successfully for user: {UserId}", userId);
 
-            return TokenValidationResult.Success(userId, email, roleClaims, expiresAt);
+            return Application.Common.Models.TokenValidationResult.Success(userId, email, roleClaims, expiresAt);
         }
         catch (SecurityTokenExpiredException)
         {
             this.logger.LogWarning("Token validation failed: Token expired");
-            return TokenValidationResult.Failure("Token expired");
+            return Application.Common.Models.TokenValidationResult.Failure("Token expired");
         }
         catch (SecurityTokenInvalidSignatureException)
         {
             this.logger.LogWarning("Token validation failed: Invalid signature");
-            return TokenValidationResult.Failure("Invalid token signature");
+            return Application.Common.Models.TokenValidationResult.Failure("Invalid token signature");
         }
         catch (SecurityTokenException ex)
         {
             this.logger.LogWarning(ex, "Token validation failed: {Message}", ex.Message);
-            return TokenValidationResult.Failure($"Token validation failed: {ex.Message}");
+            return Application.Common.Models.TokenValidationResult.Failure($"Token validation failed: {ex.Message}");
         }
         catch (Exception ex)
         {
             this.logger.LogError(ex, "Unexpected error during token validation");
-            return TokenValidationResult.Failure("Token validation failed");
+            return Application.Common.Models.TokenValidationResult.Failure("Token validation failed");
         }
     }
 
@@ -211,24 +237,121 @@ public class AuthenticationService : IAuthenticationService
     /// <returns>The new JWT token.</returns>
     public async Task<JwtToken> RefreshTokenAsync(string refreshToken)
     {
-        await Task.CompletedTask; // Make async for future extensibility
-
         ArgumentException.ThrowIfNullOrWhiteSpace(refreshToken);
 
-        // NOTE: In a real implementation, you would:
-        // 1. Validate the refresh token against stored refresh tokens in the database
-        // 2. Check if the refresh token is not expired or revoked
-        // 3. Get the associated user from the refresh token
-        // 4. Generate a new access token for that user
+        try
+        {
+            // Validate refresh token exists and is not expired
+            if (!RefreshTokens.TryGetValue(refreshToken, out var tokenInfo))
+            {
+                this.logger.LogWarning("Refresh token not found: {RefreshToken}", refreshToken);
+                throw new SecurityTokenException("Invalid refresh token");
+            }
 
-        // For now, throwing NotImplementedException as this requires database integration
-        // which should be implemented when integrating with the user repository
-        throw new NotImplementedException(
-            "Refresh token functionality requires database integration to validate and store refresh tokens. " +
-            "This should be implemented when integrating with the user repository and refresh token storage.");
+            if (tokenInfo.IsRevoked)
+            {
+                this.logger.LogWarning("Refresh token is revoked: {RefreshToken}", refreshToken);
+                throw new SecurityTokenException("Refresh token has been revoked");
+            }
+
+            if (tokenInfo.ExpiresAt <= DateTime.UtcNow)
+            {
+                this.logger.LogWarning("Refresh token is expired: {RefreshToken}", refreshToken);
+
+                // Remove expired token
+                RefreshTokens.TryRemove(refreshToken, out _);
+                throw new SecurityTokenException("Refresh token has expired");
+            }
+
+            // Get user from repository
+            var user = await this.userRepository.GetByIdAsync(tokenInfo.UserId);
+            if (user == null || !user.IsActive)
+            {
+                this.logger.LogWarning(
+                    "User not found or inactive for refresh token: {UserId}",
+                    tokenInfo.UserId);
+
+                // Revoke token if user is not found or inactive
+                tokenInfo.IsRevoked = true;
+                throw new SecurityTokenException("User not found or inactive");
+            }
+
+            // Remove old refresh token
+            RefreshTokens.TryRemove(refreshToken, out _);
+
+            // Generate new token pair
+            var newTokenResult = await this.GenerateTokenAsync(user);
+
+            this.logger.LogInformation("Token refreshed successfully for user: {UserId}", user.Id);
+            return newTokenResult;
+        }
+        catch (Exception ex) when (ex is not SecurityTokenException)
+        {
+            this.logger.LogError(ex, "Unexpected error during token refresh");
+            throw new SecurityTokenException("Token refresh failed", ex);
+        }
     }
 
-    private string GenerateRefreshToken()
+    /// <summary>
+    /// Revokes a refresh token.
+    /// </summary>
+    /// <param name="refreshToken">The refresh token to revoke.</param>
+    /// <returns>True if the token was revoked successfully; otherwise, false.</returns>
+    public async Task<bool> RevokeRefreshTokenAsync(string refreshToken)
+    {
+        await Task.CompletedTask; // Make async for future extensibility
+
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            return false;
+        }
+
+        if (RefreshTokens.TryGetValue(refreshToken, out var tokenInfo))
+        {
+            tokenInfo.IsRevoked = true;
+            this.logger.LogInformation("Refresh token revoked: {RefreshToken}", refreshToken);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Revokes all refresh tokens for a specific user.
+    /// </summary>
+    /// <param name="userId">The user ID whose tokens should be revoked.</param>
+    /// <returns>The number of tokens revoked.</returns>
+    public async Task<int> RevokeAllUserTokensAsync(int userId)
+    {
+        await Task.CompletedTask; // Make async for future extensibility
+
+        var revokedCount = 0;
+        var tokensToRevoke = RefreshTokens
+            .Where(kvp => kvp.Value.UserId == userId && !kvp.Value.IsRevoked)
+            .ToList();
+
+        foreach (var token in tokensToRevoke)
+        {
+            token.Value.IsRevoked = true;
+            revokedCount++;
+        }
+
+        if (revokedCount > 0)
+        {
+            this.logger.LogInformation(
+                "Revoked {Count} refresh tokens for user: {UserId}",
+                revokedCount,
+                userId);
+        }
+
+        return revokedCount;
+    }
+
+    /// <summary>
+    /// Generates a secure refresh token.
+    /// </summary>
+    /// <returns>A cryptographically secure refresh token.</returns>
+    private static string GenerateRefreshToken()
     {
         var randomBytes = new byte[64];
         using var rng = RandomNumberGenerator.Create();

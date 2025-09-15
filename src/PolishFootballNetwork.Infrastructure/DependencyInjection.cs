@@ -1,14 +1,19 @@
+namespace PolishFootballNetwork.Infrastructure;
+
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using PolishFootballNetwork.Application.Common.Interfaces;
 using PolishFootballNetwork.Domain.Repositories;
+using PolishFootballNetwork.Infrastructure.Authorization;
 using PolishFootballNetwork.Infrastructure.Configuration;
 using PolishFootballNetwork.Infrastructure.Services;
-using PolishFootballNetwork.Persistence.Data;
+using PolishFootballNetwork.Persistence;
 using PolishFootballNetwork.Persistence.Repositories;
-
-namespace PolishFootballNetwork.Infrastructure;
 
 /// <summary>
 /// Extension methods for registering Infrastructure layer services.
@@ -38,8 +43,92 @@ public static class DependencyInjection
         // Register infrastructure services
         services.AddExternalServices();
 
+        // Register JWT authentication
+        services.AddJwtAuthentication(configuration);
+
         // Register hosted services
         services.AddHostedServices();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds JWT authentication services to the dependency injection container.
+    /// </summary>
+    /// <param name="services">Service collection.</param>
+    /// <param name="configuration">Configuration instance.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
+    {
+        var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
+            ?? throw new InvalidOperationException("JWT configuration is missing");
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtOptions.Issuer,
+                ValidAudience = jwtOptions.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey)),
+                ClockSkew = TimeSpan.Zero,
+            };
+
+            options.SaveToken = jwtOptions.SaveToken;
+            options.RequireHttpsMetadata = jwtOptions.RequireHttps;
+        });
+
+        services.AddAuthorization(AuthorizationPolicies.ConfigurePolicies);
+
+        // Register authorization services
+        services.AddScoped<IAuthorizationHandler, RoleAuthorizationHandler>();
+        services.AddScoped<Infrastructure.Authorization.IAuthorizationService, Infrastructure.Authorization.AuthorizationService>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds health checks for Infrastructure services.
+    /// </summary>
+    /// <param name="services">Service collection.</param>
+    /// <param name="configuration">Configuration instance.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddInfrastructureHealthChecks(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHealthChecks()
+            .AddDbContextCheck<FootballNetworkDbContext>("database")
+            .AddCheck("file-storage", () =>
+            {
+                var fileStorageOptions = configuration.GetSection(FileStorageOptions.SectionName).Get<FileStorageOptions>();
+                
+                if (fileStorageOptions == null || string.IsNullOrEmpty(fileStorageOptions.UploadPath))
+                {
+                    return Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Unhealthy("File storage configuration is missing");
+                }
+
+                if (!Directory.Exists(fileStorageOptions.UploadPath))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(fileStorageOptions.UploadPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        return Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Unhealthy($"Cannot create upload directory: {ex.Message}");
+                    }
+                }
+
+                return Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy("File storage is available");
+            });
 
         return services;
     }
@@ -117,82 +206,6 @@ public static class DependencyInjection
     {
         // Register hosted services
         services.AddHostedService<DatabaseService>();
-
-        return services;
-    }
-
-    /// <summary>
-    /// Adds JWT authentication services to the dependency injection container.
-    /// </summary>
-    /// <param name="services">Service collection.</param>
-    /// <param name="configuration">Configuration instance.</param>
-    /// <returns>The service collection for chaining.</returns>
-    public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
-    {
-        var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
-            ?? throw new InvalidOperationException("JWT configuration is missing");
-
-        services.AddAuthentication("Bearer")
-            .AddJwtBearer("Bearer", options =>
-            {
-                options.Authority = jwtOptions.Issuer;
-                options.RequireHttpsMetadata = jwtOptions.RequireHttps;
-                options.SaveToken = jwtOptions.SaveToken;
-
-                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = jwtOptions.Issuer,
-                    ValidateAudience = true,
-                    ValidAudience = jwtOptions.Audience,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
-                        System.Text.Encoding.UTF8.GetBytes(jwtOptions.SecretKey)),
-                    ClockSkew = TimeSpan.Zero
-                };
-            });
-
-        services.AddAuthorization();
-
-        return services;
-    }
-
-    /// <summary>
-    /// Adds health checks for Infrastructure services.
-    /// </summary>
-    /// <param name="services">Service collection.</param>
-    /// <param name="configuration">Configuration instance.</param>
-    /// <returns>The service collection for chaining.</returns>
-    public static IServiceCollection AddInfrastructureHealthChecks(this IServiceCollection services, IConfiguration configuration)
-    {
-        var databaseOptions = configuration.GetSection(DatabaseOptions.SectionName).Get<DatabaseOptions>();
-
-        services.AddHealthChecks()
-            .AddDbContextCheck<FootballNetworkDbContext>("database")
-            .AddCheck("file-storage", () =>
-            {
-                var fileStorageOptions = configuration.GetSection(FileStorageOptions.SectionName).Get<FileStorageOptions>();
-                
-                if (fileStorageOptions == null || string.IsNullOrEmpty(fileStorageOptions.UploadPath))
-                {
-                    return Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Unhealthy("File storage configuration is missing");
-                }
-
-                if (!Directory.Exists(fileStorageOptions.UploadPath))
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(fileStorageOptions.UploadPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        return Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Unhealthy($"Cannot create upload directory: {ex.Message}");
-                    }
-                }
-
-                return Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy("File storage is available");
-            });
 
         return services;
     }

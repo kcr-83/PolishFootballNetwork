@@ -2,6 +2,8 @@ using PolishFootballNetwork.Application;
 using PolishFootballNetwork.Infrastructure;
 using PolishFootballNetwork.Infrastructure.Logging;
 using PolishFootballNetwork.Persistence;
+using PolishFootballNetwork.WebApi.Endpoints;
+using PolishFootballNetwork.WebApi.Extensions;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +15,7 @@ builder.Host.AddSerilog(builder.Configuration);
 builder.Services.AddApplicationServices();
 builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddWebApiServices();
 
 // Add Serilog request logging
 builder.Services.AddSerilogRequestLogging();
@@ -47,6 +50,9 @@ if (app.Environment.IsDevelopment())
 // Add Serilog request logging
 app.UseSerilogRequestLogging();
 
+// Configure middleware pipeline with security features
+app.UseCustomMiddleware();
+
 app.UseHttpsRedirection();
 app.UseCors("AllowAngularApp");
 
@@ -57,6 +63,12 @@ app.UseAuthorization();
 // Map health checks
 app.MapHealthChecks("/health");
 
+// Map authentication endpoints
+app.MapGroup("/api/auth").MapAuthEndpoints();
+
+// Map user management endpoints (role-based authorization examples)
+app.MapGroup("/api/users").MapUserEndpoints();
+
 // Sample endpoint - will be replaced with actual API endpoints
 app.MapGet("/api/status", () => new { Status = "OK", Timestamp = DateTime.UtcNow })
     .WithName("GetStatus")
@@ -65,7 +77,7 @@ app.MapGet("/api/status", () => new { Status = "OK", Timestamp = DateTime.UtcNow
 try
 {
     Log.Information("Starting Polish Football Network API");
-    app.Run();
+    await app.RunAsync();
 }
 catch (Exception ex)
 {
@@ -73,5 +85,5 @@ catch (Exception ex)
 }
 finally
 {
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }

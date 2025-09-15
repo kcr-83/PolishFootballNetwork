@@ -91,6 +91,20 @@ public interface IAuthenticationService
     /// <param name="refreshToken">The refresh token.</param>
     /// <returns>The new JWT token.</returns>
     Task<JwtToken> RefreshTokenAsync(string refreshToken);
+
+    /// <summary>
+    /// Revokes a refresh token.
+    /// </summary>
+    /// <param name="refreshToken">The refresh token to revoke.</param>
+    /// <returns>True if the token was revoked successfully; otherwise, false.</returns>
+    Task<bool> RevokeRefreshTokenAsync(string refreshToken);
+
+    /// <summary>
+    /// Revokes all refresh tokens for a specific user.
+    /// </summary>
+    /// <param name="userId">The user ID whose tokens should be revoked.</param>
+    /// <returns>The number of tokens revoked.</returns>
+    Task<int> RevokeAllUserTokensAsync(int userId);
 }
 
 /// <summary>

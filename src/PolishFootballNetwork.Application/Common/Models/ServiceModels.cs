@@ -131,7 +131,7 @@ public class TokenValidationResult
     /// <summary>
     /// Gets or sets the user ID from the token.
     /// </summary>
-    public Guid? UserId { get; set; }
+    public int? UserId { get; set; }
 
     /// <summary>
     /// Gets or sets the user email from the token.
@@ -161,7 +161,7 @@ public class TokenValidationResult
     /// <param name="roles">The user roles.</param>
     /// <param name="expiresAt">The token expiration.</param>
     /// <returns>A successful validation result.</returns>
-    public static TokenValidationResult Success(Guid userId, string userEmail, IReadOnlyList<string> roles, DateTime expiresAt)
+    public static TokenValidationResult Success(int userId, string userEmail, IReadOnlyList<string> roles, DateTime expiresAt)
     {
         return new TokenValidationResult
         {
