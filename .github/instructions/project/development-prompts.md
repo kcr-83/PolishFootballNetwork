@@ -294,7 +294,7 @@ Include proper error handling, logging configuration, and production-ready setti
 
 ### Prompt 3.1: Angular Application Structure
 ```
-Create Angular 17+ application with standalone components:
+Create Angular 21+ application with standalone components:
 
 1. Project Setup:
    - Angular CLI configuration
@@ -326,7 +326,7 @@ Create Angular 17+ application with standalone components:
    - Feature flags
    - App constants
 
-Use standalone components approach with inject() function and modern Angular patterns.
+Use standalone components approach with inject() function and modern Angular patterns like signals.
 ```
 
 ### Prompt 3.2: Authentication & Routing
