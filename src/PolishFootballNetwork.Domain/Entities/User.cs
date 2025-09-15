@@ -18,6 +18,11 @@ public class User : Entity
     public string Username { get; private set; }
 
     /// <summary>
+    /// Gets the password hash of the user.
+    /// </summary>
+    public string PasswordHash { get; private set; }
+
+    /// <summary>
     /// Gets the email address of the user.
     /// </summary>
     public string Email { get; private set; }
@@ -159,6 +164,13 @@ public class User : Entity
         }
     }
 
+
+    public void UpdateLastLoginTime()
+    {
+        LastLoginAt = DateTime.UtcNow;
+        SetLastLoginTime(LastLoginAt);
+        UpdateModifiedAt();
+    }
     /// <summary>
     /// Updates the role of the user.
     /// </summary>
@@ -344,6 +356,14 @@ public class User : Entity
             throw new BusinessRuleValidationException("Last name cannot exceed 50 characters.", nameof(LastName));
 
         LastName = lastName.Trim();
+    }
+
+    private void SetLastLoginTime(DateTime? lastLoginAt)
+    {
+        if (lastLoginAt == null)
+            throw new BusinessRuleValidationException("Last login time cannot be empty.", nameof(LastLoginAt));
+
+        LastLoginAt = lastLoginAt.Value;
     }
 
     private static bool IsValidUsername(string username)

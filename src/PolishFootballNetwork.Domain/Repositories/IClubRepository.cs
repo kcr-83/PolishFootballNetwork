@@ -1,4 +1,5 @@
 using PolishFootballNetwork.Domain.Entities;
+using PolishFootballNetwork.Domain.Enums;
 
 namespace PolishFootballNetwork.Domain.Repositories;
 
@@ -112,4 +113,36 @@ public interface IClubRepository
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A paginated collection of clubs.</returns>
     Task<IEnumerable<Club>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a paginated list of clubs with filtering.
+    /// </summary>
+    /// <param name="pageNumber">The page number (1-based).</param>
+    /// <param name="pageSize">The number of items per page.</param>
+    /// <param name="searchTerm">Optional search term to filter by club name.</param>
+    /// <param name="league">Optional league filter.</param>
+    /// <param name="city">Optional city filter.</param>
+    /// <param name="isActive">Optional active status filter.</param>
+    /// <param name="isVerified">Optional verified status filter.</param>
+    /// <param name="isFeatured">Optional featured status filter.</param>
+    /// <param name="foundedYearFrom">Optional minimum founded year filter.</param>
+    /// <param name="foundedYearTo">Optional maximum founded year filter.</param>
+    /// <param name="sortBy">Field to sort by.</param>
+    /// <param name="sortDescending">Whether to sort in descending order.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A paginated result with clubs and total count.</returns>
+    Task<(IEnumerable<Club> Items, int TotalCount)> GetPagedWithFilterAsync(
+        int pageNumber, 
+        int pageSize, 
+        string? searchTerm = null,
+        LeagueType? league = null,
+        string? city = null,
+        bool? isActive = null,
+        bool? isVerified = null,
+        bool? isFeatured = null,
+        int? foundedYearFrom = null,
+        int? foundedYearTo = null,
+        string sortBy = "Name",
+        bool sortDescending = false,
+        CancellationToken cancellationToken = default);
 }
