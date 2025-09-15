@@ -1,3 +1,4 @@
+using Microsoft.OpenApi.Models;
 using PolishFootballNetwork.Application;
 using PolishFootballNetwork.Infrastructure;
 using PolishFootballNetwork.Infrastructure.Logging;
@@ -15,7 +16,8 @@ builder.Host.AddSerilog(builder.Configuration);
 builder.Services.AddApplicationServices();
 builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddInfrastructureServices(builder.Configuration);
-builder.Services.AddWebApiServices();
+builder.Services.AddWebApiServices(builder.Configuration);
+builder.Services.AddWebApiCoreServices(builder.Configuration);
 
 // Add response caching and compression for public API
 builder.Services.AddCachingAndCompression();
@@ -28,6 +30,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    // Main API documentation
     options.SwaggerDoc("v1", new()
     {
         Title = "Polish Football Network API",
@@ -38,8 +41,41 @@ builder.Services.AddSwaggerGen(options =>
         Contact = new()
         {
             Name = "Polish Football Network",
-            Email = "contact@polishfootballnetwork.com"
-        }
+            Email = "contact@polishfootballnetwork.com",
+            Url = new("https://github.com/polishfootballnetwork"),
+        },
+        License = new()
+        {
+            Name = "MIT",
+            Url = new("https://opensource.org/licenses/MIT"),
+        },
+        TermsOfService = new("https://polishfootballnetwork.com/terms"),
+    });
+
+    // Authentication schemes
+    options.AddSecurityDefinition("Bearer", new()
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+    });
+
+    options.AddSecurityRequirement(new()
+    {
+        {
+            new()
+            {
+                Reference = new()
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer",
+                },
+            },
+            Array.Empty<string>()
+        },
     });
 
     // Add XML comments if available
@@ -50,9 +86,34 @@ builder.Services.AddSwaggerGen(options =>
         options.IncludeXmlComments(xmlPath);
     }
 
-    // Group endpoints by tags
+    // Add XML comments for referenced assemblies
+    var applicationXmlFile = "PolishFootballNetwork.Application.xml";
+    var applicationXmlPath = Path.Combine(AppContext.BaseDirectory, applicationXmlFile);
+    if (File.Exists(applicationXmlPath))
+    {
+        options.IncludeXmlComments(applicationXmlPath);
+    }
+
+    var domainXmlFile = "PolishFootballNetwork.Domain.xml";
+    var domainXmlPath = Path.Combine(AppContext.BaseDirectory, domainXmlFile);
+    if (File.Exists(domainXmlPath))
+    {
+        options.IncludeXmlComments(domainXmlPath);
+    }
+
+    // Group endpoints by tags for better organization
     options.TagActionsBy(api => new[] { api.GroupName ?? "Default" });
     options.DocInclusionPredicate((name, api) => true);
+
+    // Enhanced documentation features
+    options.UseInlineDefinitionsForEnums();
+    
+    // Custom schema filters
+    options.SupportNonNullableReferenceTypes();
+    options.UseOneOfForPolymorphism();
+    
+    // Custom operation ID generator
+    options.CustomOperationIds(e => $"{e.ActionDescriptor.RouteValues["controller"]}_{e.ActionDescriptor.RouteValues["action"]}");
 });
 
 // Add CORS

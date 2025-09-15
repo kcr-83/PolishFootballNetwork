@@ -3,6 +3,8 @@
   <PropertyGroup>
     <RootNamespace>PolishFootballNetwork.Domain</RootNamespace>
     <AssemblyName>PolishFootballNetwork.Domain</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <!-- Domain layer should have no external dependencies -->
