@@ -49,6 +49,22 @@ public interface IClubRepository
     Task<IEnumerable<Club>> SearchByNameAsync(string nameSearchTerm, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets a club by its exact name.
+    /// </summary>
+    /// <param name="name">The exact name of the club.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The club if found; otherwise, null.</returns>
+    Task<Club?> GetByNameAsync(string name, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a club by its exact short name.
+    /// </summary>
+    /// <param name="shortName">The exact short name of the club.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The club if found; otherwise, null.</returns>
+    Task<Club?> GetByShortNameAsync(string shortName, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets clubs within a specified geographic area.
     /// </summary>
     /// <param name="centerX">The X coordinate of the center point.</param>
@@ -97,6 +113,14 @@ public interface IClubRepository
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task RemoveAsync(Club club, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a club from the repository by ID.
+    /// </summary>
+    /// <param name="id">The ID of the club to delete.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task DeleteAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the total count of clubs in the repository.

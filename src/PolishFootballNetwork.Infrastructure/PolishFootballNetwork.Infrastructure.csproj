@@ -12,6 +12,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <PackageReference Include="BCrypt.Net-Next" />
     <PackageReference Include="SixLabors.ImageSharp" />
@@ -24,6 +29,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PolishFootballNetwork.Domain\PolishFootballNetwork.Domain.csproj" />
     <ProjectReference Include="..\PolishFootballNetwork.Application\PolishFootballNetwork.Application.csproj" />
+    <ProjectReference Include="..\PolishFootballNetwork.Persistence\PolishFootballNetwork.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

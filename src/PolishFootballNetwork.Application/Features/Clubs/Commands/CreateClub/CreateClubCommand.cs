@@ -57,9 +57,28 @@ public class CreateClubCommand : ICommand<Result<ClubDto>>
     public double? Y { get; set; }
 
     /// <summary>
+    /// Gets or sets the latitude coordinate of the club's position.
+    /// </summary>
+    public double? Latitude { get; set; }
+
+    /// <summary>
+    /// Gets or sets the longitude coordinate of the club's position.
+    /// </summary>
+    public double? Longitude { get; set; }
+
+    /// <summary>
     /// Gets or sets the year the club was founded.
     /// </summary>
     public int? Founded { get; set; }
+
+    /// <summary>
+    /// Gets or sets the year the club was founded (alias for Founded).
+    /// </summary>
+    public int? FoundedYear
+    {
+        get => Founded;
+        set => Founded = value;
+    }
 
     /// <summary>
     /// Gets or sets the stadium name.

@@ -20,6 +20,15 @@ public class DeleteClubCommand : ICommand<Result>
     public bool HardDelete { get; set; } = false;
 
     /// <summary>
+    /// Gets or sets a value indicating whether to force delete (alias for HardDelete).
+    /// </summary>
+    public bool ForceDelete
+    {
+        get => HardDelete;
+        set => HardDelete = value;
+    }
+
+    /// <summary>
     /// Initializes a new instance of the DeleteClubCommand class.
     /// </summary>
     /// <param name="id">The ID of the club to delete.</param>

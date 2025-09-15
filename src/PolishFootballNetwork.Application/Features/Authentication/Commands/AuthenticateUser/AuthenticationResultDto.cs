@@ -86,7 +86,7 @@ public class UserDto
             Email = user.Email,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Role = user.Role,
+            Role = user.Role.ToString(),
             IsActive = user.IsActive,
             LastLoginAt = user.LastLoginAt,
             CreatedAt = user.CreatedAt

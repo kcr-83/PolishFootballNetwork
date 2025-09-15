@@ -98,6 +98,15 @@ public interface IConnectionRepository
     Task<IEnumerable<Connection>> GetAllConnectionsBetweenClubsAsync(int clubId1, int clubId2, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets the first connection found between two specific clubs (convenience method).
+    /// </summary>
+    /// <param name="clubId1">The identifier of the first club.</param>
+    /// <param name="clubId2">The identifier of the second club.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The first connection between the clubs if it exists; otherwise, null.</returns>
+    Task<Connection?> GetBetweenClubsAsync(int clubId1, int clubId2, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Checks if a connection exists between two clubs.
     /// </summary>
     /// <param name="sourceClubId">The identifier of the source club.</param>
@@ -145,6 +154,14 @@ public interface IConnectionRepository
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task RemoveAsync(Connection connection, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a connection from the repository by ID.
+    /// </summary>
+    /// <param name="id">The ID of the connection to delete.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task DeleteAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the total count of connections in the repository.

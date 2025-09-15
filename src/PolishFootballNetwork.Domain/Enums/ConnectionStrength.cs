@@ -18,5 +18,10 @@ public enum ConnectionStrength
     /// <summary>
     /// A strong, significant connection with major historical, cultural, or competitive importance.
     /// </summary>
-    Strong = 3
+    Strong = 3,
+
+    /// <summary>
+    /// An extremely strong connection with exceptional historical, cultural, or competitive significance.
+    /// </summary>
+    VeryStrong = 4
 }
