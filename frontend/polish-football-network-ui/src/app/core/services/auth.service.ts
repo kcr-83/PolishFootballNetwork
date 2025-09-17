@@ -196,6 +196,13 @@ export class AuthService {
   }
 
   /**
+   * Get current JWT token
+   */
+  public getToken(): string | null {
+    return this._token();
+  }
+
+  /**
    * Change user password
    */
   public changePassword(passwordData: ChangePasswordDto): Observable<void> {

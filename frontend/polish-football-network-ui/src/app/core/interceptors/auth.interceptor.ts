@@ -1,26 +1,20 @@
-import { HttpInterceptorFn, HttpRequest, HttpHandlerFn } from '@angular/common/http';
+import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
-import { APP_CONSTANTS } from '../constants';
 
 /**
  * Authentication interceptor using functional approach (Angular 15+)
- * Automatically adds JWT token to requests that require authentication
+ * Automatically adds JWT token to outgoing HTTP requests
  */
-export const authInterceptor: HttpInterceptorFn = (
-  req: HttpRequest<unknown>,
-  next: HttpHandlerFn
-) => {
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
+  const token = authService.getToken();
 
-  // Get current token from auth service
-  const token = authService.token();
-
-  // Skip adding token for authentication endpoints to avoid circular issues
+  // URLs that should skip authentication
   const skipAuthUrls = [
-    APP_CONSTANTS.ENDPOINTS.AUTH.LOGIN,
-    APP_CONSTANTS.ENDPOINTS.AUTH.LOGOUT,
-    APP_CONSTANTS.ENDPOINTS.AUTH.REFRESH,
+    '/auth/login',
+    '/auth/logout',
+    '/auth/refresh',
     '/auth/register',
     '/auth/request-password-reset',
     '/auth/reset-password',
