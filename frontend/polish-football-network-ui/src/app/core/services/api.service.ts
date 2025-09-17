@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { map, catchError, retry, timeout } from 'rxjs/operators';
+import { Observable, throwError, of } from 'rxjs';
+import { map, catchError, retry, timeout, share, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { APP_CONSTANTS, ERROR_MESSAGES } from '../constants';
 import {
@@ -13,6 +13,23 @@ import {
 } from '../models';
 
 /**
+ * Cache entry interface
+ */
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  ttl: number;
+}
+
+/**
+ * Cache configuration
+ */
+interface CacheConfig {
+  ttl?: number; // Time to live in milliseconds
+  enabled?: boolean;
+}
+
+/**
  * Generic API service with modern Angular patterns and error handling
  */
 @Injectable({
@@ -21,6 +38,10 @@ import {
 export class ApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiUrl;
+
+  // Cache management
+  private readonly cache = new Map<string, CacheEntry<unknown>>();
+  private readonly defaultCacheTtl = 5 * 60 * 1000; // 5 minutes
 
   // Loading state management with signals
   private readonly loadingState = signal<Record<string, boolean>>({});
@@ -31,37 +52,59 @@ export class ApiService {
   public readonly currentError = computed(() => this.errorState());
 
   /**
-   * Generic GET request method
+   * Generic GET request method with caching support
    */
-  public get<T>(endpoint: string, params?: Record<string, unknown>): Observable<T> {
-    return this.makeRequest<T>('GET', endpoint, undefined, params);
+  public get<T>(
+    endpoint: string,
+    params?: Record<string, unknown>,
+    cacheConfig?: CacheConfig
+  ): Observable<T> {
+    const cacheKey = this.buildCacheKey('GET', endpoint, params);
+
+    // Check cache first
+    if (cacheConfig?.enabled !== false) {
+      const cachedData = this.getFromCache<T>(cacheKey);
+      if (cachedData) {
+        return of(cachedData);
+      }
+    }
+
+    return this.makeRequest<T>('GET', endpoint, undefined, params, cacheConfig, cacheKey);
   }
 
   /**
-   * Generic POST request method
+   * Generic POST request method (invalidates cache)
    */
   public post<T>(endpoint: string, body?: unknown, params?: Record<string, unknown>): Observable<T> {
+    // Invalidate related cache entries for POST operations
+    this.invalidateCachePattern(endpoint);
     return this.makeRequest<T>('POST', endpoint, body, params);
   }
 
   /**
-   * Generic PUT request method
+   * Generic PUT request method (invalidates cache)
    */
   public put<T>(endpoint: string, body?: unknown, params?: Record<string, unknown>): Observable<T> {
+    // Invalidate related cache entries for PUT operations
+    this.invalidateCachePattern(endpoint);
     return this.makeRequest<T>('PUT', endpoint, body, params);
   }
 
   /**
-   * Generic DELETE request method
+   * Generic DELETE request method (invalidates cache)
    */
   public delete<T>(endpoint: string, params?: Record<string, unknown>): Observable<T> {
+    // Invalidate related cache entries for DELETE operations
+    this.invalidateCachePattern(endpoint);
     return this.makeRequest<T>('DELETE', endpoint, undefined, params);
   }
 
   /**
-   * Generic PATCH request method
+   * Generic PATCH request method (invalidates cache)
    */
   public patch<T>(endpoint: string, body?: unknown, params?: Record<string, unknown>): Observable<T> {
+    // Invalidate related cache entries for PATCH operations
+    this.invalidateCachePattern(endpoint);
     return this.makeRequest<T>('PATCH', endpoint, body, params);
   }
 
@@ -116,10 +159,64 @@ export class ApiService {
   }
 
   /**
+   * Cache management methods
+   */
+  public clearCache(): void {
+    this.cache.clear();
+  }
+
+  public removeCacheEntry(key: string): void {
+    this.cache.delete(key);
+  }
+
+  public invalidateCachePattern(pattern: string): void {
+    const keysToDelete = Array.from(this.cache.keys()).filter(key => key.includes(pattern));
+    keysToDelete.forEach(key => this.cache.delete(key));
+  }
+
+  /**
    * Build full URL from endpoint
    */
   private buildUrl(endpoint: string): string {
     return `${this.baseUrl}${endpoint}`;
+  }
+
+  /**
+   * Build cache key from request parameters
+   */
+  private buildCacheKey(method: string, endpoint: string, params?: Record<string, unknown>): string {
+    const paramString = params ? JSON.stringify(params) : '';
+    return `${method}:${endpoint}:${paramString}`;
+  }
+
+  /**
+   * Get data from cache if valid
+   */
+  private getFromCache<T>(key: string): T | null {
+    const entry = this.cache.get(key) as CacheEntry<T> | undefined;
+
+    if (!entry) {
+      return null;
+    }
+
+    const now = Date.now();
+    if (now - entry.timestamp > entry.ttl) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return entry.data;
+  }
+
+  /**
+   * Store data in cache
+   */
+  private setCache<T>(key: string, data: T, ttl: number = this.defaultCacheTtl): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl,
+    });
   }
 
   /**
@@ -168,7 +265,9 @@ export class ApiService {
     method: string,
     endpoint: string,
     body?: unknown,
-    params?: Record<string, unknown>
+    params?: Record<string, unknown>,
+    cacheConfig?: CacheConfig,
+    cacheKey?: string
   ): Observable<T> {
     const url = this.buildUrl(endpoint);
     const httpParams = this.buildHttpParams(params);
@@ -198,11 +297,19 @@ export class ApiService {
         }
         return response as T;
       }),
+      tap(data => {
+        // Cache successful GET requests
+        if (method === 'GET' && cacheKey && cacheConfig?.enabled !== false) {
+          const ttl = cacheConfig?.ttl ?? this.defaultCacheTtl;
+          this.setCache(cacheKey, data, ttl);
+        }
+      }),
       catchError(error => {
         const apiError = this.handleHttpError(error);
         this.setError(apiError);
         return throwError(() => apiError);
-      })
+      }),
+      share() // Share subscription to prevent multiple identical requests
     );
 
     // Handle loading state cleanup
