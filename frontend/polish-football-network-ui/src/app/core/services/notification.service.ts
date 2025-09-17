@@ -161,6 +161,27 @@ export class NotificationService {
   }
 
   /// <summary>
+  /// Convenience method: Show success notification.
+  /// </summary>
+  public showSuccess(message: string, options?: Partial<NotificationOptions>): string {
+    return this.success(message, options);
+  }
+
+  /// <summary>
+  /// Convenience method: Show error notification.
+  /// </summary>
+  public showError(message: string, options?: Partial<NotificationOptions>): string {
+    return this.error(message, options);
+  }
+
+  /// <summary>
+  /// Convenience method: Show info notification.
+  /// </summary>
+  public showInfo(message: string, options?: Partial<NotificationOptions>): string {
+    return this.info(message, options);
+  }
+
+  /// <summary>
   /// Show notification with enhanced queue management.
   /// </summary>
   public show(message: string, options: NotificationOptions = {}): string {

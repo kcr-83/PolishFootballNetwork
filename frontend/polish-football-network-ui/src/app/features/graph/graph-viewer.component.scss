@@ -1,0 +1,642 @@
+// Graph Viewer Component Styles
+// Comprehensive styling for the interactive football club network visualization
+
+.graph-viewer-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f5f5f5;
+
+  // Toolbar Styling
+  .graph-toolbar {
+    position: relative;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    .toolbar-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+
+      mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    .toolbar-spacer {
+      flex: 1;
+    }
+
+    .layout-select {
+      min-width: 140px;
+      margin-right: 16px;
+      color: white;
+
+      ::ng-deep {
+        .mat-mdc-select-value {
+          color: white;
+        }
+
+        .mat-mdc-select-arrow {
+          color: white;
+        }
+      }
+    }
+
+    button {
+      margin-left: 8px;
+    }
+  }
+
+  // Loading Bar
+  .loading-bar {
+    height: 4px;
+  }
+
+  // Error Container
+  .error-container {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+
+    .error-card {
+      max-width: 500px;
+      width: 100%;
+
+      .error-content {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+
+        mat-icon {
+          font-size: 48px;
+          width: 48px;
+          height: 48px;
+        }
+
+        .error-text {
+          h3 {
+            margin: 0 0 8px 0;
+            color: #d32f2f;
+          }
+
+          p {
+            margin: 0;
+            color: #666;
+          }
+        }
+      }
+
+      .error-actions {
+        display: flex;
+        justify-content: flex-end;
+      }
+    }
+  }
+
+  // Controls Panel
+  .controls-panel {
+    position: absolute;
+    top: 80px;
+    left: 20px;
+    width: 280px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 900;
+    transition: transform 0.3s ease;
+
+    &.collapsed {
+      transform: translateX(-240px);
+    }
+
+    .controls-header {
+      padding: 12px 16px;
+      background: #1976d2;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      border-radius: 8px 8px 0 0;
+      font-weight: 500;
+
+      &:hover {
+        background: #1565c0;
+      }
+
+      mat-icon {
+        transition: transform 0.3s ease;
+      }
+    }
+
+    .controls-content {
+      padding: 16px;
+      max-height: 400px;
+      overflow-y: auto;
+
+      .control-group {
+        margin-bottom: 20px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        h4 {
+          margin: 0 0 12px 0;
+          font-size: 14px;
+          font-weight: 500;
+          color: #333;
+        }
+
+        // Zoom Controls
+        .zoom-controls {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 8px;
+
+          .zoom-level {
+            min-width: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+          }
+        }
+
+        // Slider Controls
+        .size-slider {
+          width: 100%;
+          margin: 8px 0;
+        }
+
+        .slider-value {
+          font-size: 12px;
+          color: #666;
+          float: right;
+        }
+
+        // Checkbox Controls
+        mat-checkbox {
+          display: block;
+          margin: 8px 0;
+
+          ::ng-deep .mat-mdc-checkbox-label {
+            font-size: 14px;
+          }
+        }
+
+        // Button Controls
+        button {
+          width: 100%;
+          margin: 4px 0;
+        }
+      }
+    }
+  }
+
+  // Graph Container
+  .graph-container {
+    flex: 1;
+    position: relative;
+    background: white;
+    margin: 0 20px 20px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+
+    &.loading {
+      pointer-events: none;
+    }
+
+    &.has-error {
+      display: none;
+    }
+
+    // Loading Placeholder
+    .loading-placeholder {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: 100;
+
+      .loading-content {
+        text-align: center;
+        padding: 40px;
+
+        .loading-icon {
+          font-size: 64px;
+          width: 64px;
+          height: 64px;
+          color: #1976d2;
+          margin-bottom: 16px;
+          animation: pulse 2s infinite;
+        }
+
+        h3 {
+          margin: 0 0 8px 0;
+          color: #333;
+          font-weight: 500;
+        }
+
+        p {
+          margin: 0;
+          color: #666;
+          font-size: 14px;
+        }
+      }
+    }
+
+    // Empty State
+    .empty-state {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .empty-content {
+        text-align: center;
+        padding: 40px;
+
+        .empty-icon {
+          font-size: 64px;
+          width: 64px;
+          height: 64px;
+          color: #9e9e9e;
+          margin-bottom: 16px;
+        }
+
+        h3 {
+          margin: 0 0 8px 0;
+          color: #666;
+          font-weight: 500;
+        }
+
+        p {
+          margin: 0 0 20px 0;
+          color: #999;
+          font-size: 14px;
+        }
+      }
+    }
+  }
+
+  // Statistics Panel
+  .stats-panel {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 900;
+
+    .stats-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+
+      .stats-content {
+        display: flex;
+        gap: 20px;
+
+        .stat-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          min-width: 80px;
+
+          mat-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+            color: #1976d2;
+          }
+
+          .stat-label {
+            font-size: 12px;
+            color: #666;
+          }
+
+          .stat-value {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+          }
+        }
+      }
+    }
+  }
+
+  // Selection Panel
+  .selection-panel {
+    position: absolute;
+    top: 80px;
+    right: 20px;
+    width: 320px;
+    z-index: 900;
+
+    .selection-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+
+      mat-card-header {
+        padding-bottom: 8px;
+
+        mat-card-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 16px;
+          font-weight: 500;
+
+          mat-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+            color: #1976d2;
+          }
+        }
+      }
+
+      .club-info {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+
+        .club-logo {
+          width: 60px;
+          height: 60px;
+          object-fit: contain;
+          border-radius: 4px;
+          background: #f5f5f5;
+          padding: 4px;
+        }
+
+        .club-details {
+          flex: 1;
+
+          h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+          }
+
+          p {
+            margin: 4px 0;
+            font-size: 14px;
+            color: #666;
+
+            strong {
+              color: #333;
+            }
+          }
+        }
+      }
+
+      .club-actions {
+        display: flex;
+        gap: 8px;
+
+        button {
+          flex: 1;
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Responsive Design
+@media (max-width: 1200px) {
+  .graph-viewer-container {
+    .controls-panel {
+      width: 260px;
+
+      &.collapsed {
+        transform: translateX(-220px);
+      }
+    }
+
+    .selection-panel {
+      width: 280px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .graph-viewer-container {
+    .graph-toolbar {
+      .toolbar-title {
+        font-size: 16px;
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
+      }
+
+      .layout-select {
+        min-width: 120px;
+        margin-right: 8px;
+      }
+    }
+
+    .controls-panel {
+      width: 240px;
+      top: 70px;
+
+      &.collapsed {
+        transform: translateX(-200px);
+      }
+
+      .controls-content {
+        padding: 12px;
+
+        .control-group {
+          margin-bottom: 16px;
+
+          .zoom-controls {
+            flex-wrap: wrap;
+            gap: 4px;
+          }
+        }
+      }
+    }
+
+    .selection-panel {
+      width: 260px;
+      top: 70px;
+
+      .club-info {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+
+        .club-logo {
+          width: 50px;
+          height: 50px;
+        }
+      }
+
+      .club-actions {
+        flex-direction: column;
+
+        button {
+          font-size: 11px;
+        }
+      }
+    }
+
+    .stats-panel {
+      bottom: 10px;
+      left: 10px;
+
+      .stats-content {
+        gap: 12px;
+
+        .stat-item {
+          min-width: 60px;
+
+          .stat-label {
+            font-size: 10px;
+          }
+
+          .stat-value {
+            font-size: 14px;
+          }
+        }
+      }
+    }
+
+    .graph-container {
+      margin: 0 10px 10px 10px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .graph-viewer-container {
+    .stats-panel .stats-content {
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .controls-panel,
+    .selection-panel {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      width: auto;
+      margin: 10px;
+
+      &.collapsed {
+        transform: translateY(-100%);
+      }
+    }
+
+    .selection-panel {
+      top: auto;
+      bottom: 60px;
+    }
+  }
+}
+
+// Dark theme support
+@media (prefers-color-scheme: dark) {
+  .graph-viewer-container {
+    background: #121212;
+
+    .graph-container {
+      background: #1e1e1e;
+    }
+
+    .controls-panel,
+    .stats-panel .stats-card,
+    .selection-panel .selection-card {
+      background: rgba(30, 30, 30, 0.95);
+      color: white;
+    }
+
+    .error-container .error-card {
+      background: #1e1e1e;
+      color: white;
+    }
+  }
+}
+
+// High contrast mode
+@media (prefers-contrast: high) {
+  .graph-viewer-container {
+    .controls-panel,
+    .stats-panel .stats-card,
+    .selection-panel .selection-card {
+      border: 2px solid #000;
+    }
+
+    .graph-container {
+      border: 2px solid #000;
+    }
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .graph-viewer-container {
+    .controls-panel {
+      transition: none;
+    }
+
+    .loading-placeholder .loading-icon {
+      animation: none;
+    }
+  }
+}
+
+// Print styles
+@media print {
+  .graph-viewer-container {
+    .graph-toolbar,
+    .controls-panel,
+    .stats-panel,
+    .selection-panel {
+      display: none !important;
+    }
+
+    .graph-container {
+      margin: 0;
+      box-shadow: none;
+      border: 1px solid #000;
+    }
+  }
+}
