@@ -1,0 +1,469 @@
+@import '../../../styles/_responsive.scss';
+
+.keyboard-shortcuts-dialog {
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  @include respond-to('md') {
+    max-width: 95vw;
+    max-height: 95vh;
+  }
+
+  .dialog-header {
+    @include flex-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    flex-shrink: 0;
+
+    @include respond-to('sm') {
+      padding: 1rem;
+    }
+
+    .header-icon {
+      color: var(--mdc-theme-primary, #1976d2);
+      margin-right: 0.75rem;
+      font-size: 1.5rem;
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: var(--mdc-theme-on-surface, #000);
+      flex: 1;
+
+      @include respond-to('sm') {
+        font-size: 1.25rem;
+      }
+    }
+
+    .close-button {
+      color: var(--mdc-theme-on-surface, #666);
+      margin-left: 1rem;
+    }
+  }
+
+  .dialog-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+
+    .shortcuts-intro {
+      padding: 1.5rem;
+      background: var(--mdc-theme-surface, #fafafa);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+
+      @include respond-to('sm') {
+        padding: 1rem;
+      }
+
+      p {
+        margin: 0 0 0.75rem 0;
+        color: var(--mdc-theme-on-surface, #333);
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      .accessibility-note {
+        @include flex-center;
+        justify-content: flex-start;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--mdc-theme-primary, #1976d2);
+        font-weight: 500;
+
+        mat-icon {
+          font-size: 1rem;
+          width: 1rem;
+          height: 1rem;
+        }
+      }
+    }
+
+    .shortcuts-sections {
+      .shortcut-category {
+        .category-title {
+          padding: 1rem 1.5rem 0.5rem 1.5rem;
+          margin: 0;
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: var(--mdc-theme-primary, #1976d2);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+
+          @include respond-to('sm') {
+            padding: 1rem 1rem 0.5rem 1rem;
+            font-size: 1rem;
+          }
+        }
+
+        .shortcuts-list {
+          padding: 0;
+
+          .shortcut-item {
+            padding: 0.75rem 1.5rem;
+            min-height: 3rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+            @include respond-to('sm') {
+              padding: 0.75rem 1rem;
+            }
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            .shortcut-content {
+              @include flex-between;
+              align-items: center;
+              width: 100%;
+              gap: 1rem;
+
+              @include respond-to('sm') {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+              }
+
+              .shortcut-keys {
+                @include flex-center;
+                gap: 0.25rem;
+                flex-shrink: 0;
+
+                .key-chip {
+                  background: var(--mdc-theme-surface, #f5f5f5);
+                  color: var(--mdc-theme-on-surface, #333);
+                  border: 1px solid rgba(0, 0, 0, 0.2);
+                  font-family: 'Courier New', monospace;
+                  font-size: 0.75rem;
+                  font-weight: 600;
+                  padding: 0.25rem 0.5rem;
+                  border-radius: 4px;
+                  min-height: 1.5rem;
+                  line-height: 1;
+
+                  @include touch-devices {
+                    padding: 0.375rem 0.625rem;
+                    font-size: 0.8125rem;
+                  }
+                }
+
+                .key-separator {
+                  color: var(--mdc-theme-on-surface, #666);
+                  font-weight: 500;
+                  margin: 0 0.125rem;
+                }
+              }
+
+              .shortcut-description {
+                flex: 1;
+                color: var(--mdc-theme-on-surface, #333);
+                font-size: 0.875rem;
+                line-height: 1.4;
+                text-align: left;
+
+                @include respond-to('sm') {
+                  font-size: 0.8125rem;
+                }
+              }
+            }
+
+            &:hover {
+              @include hover-devices {
+                background: rgba(0, 0, 0, 0.04);
+              }
+            }
+          }
+        }
+
+        mat-divider {
+          margin: 1rem 0;
+          opacity: 0.6;
+        }
+      }
+    }
+
+    .accessibility-features {
+      padding: 1.5rem;
+      background: var(--mdc-theme-surface, #fafafa);
+      border-top: 1px solid rgba(0, 0, 0, 0.12);
+
+      @include respond-to('sm') {
+        padding: 1rem;
+      }
+
+      h3 {
+        margin: 0 0 1rem 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--mdc-theme-primary, #1976d2);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+
+        @include respond-to('sm') {
+          font-size: 1rem;
+        }
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+
+        @include respond-to('md') {
+          grid-template-columns: 1fr;
+        }
+
+        .feature-item {
+          @include responsive-card;
+          padding: 1rem;
+          background: var(--mdc-theme-background, #fff);
+          display: flex;
+          align-items: flex-start;
+          gap: 0.75rem;
+
+          mat-icon {
+            color: var(--mdc-theme-primary, #1976d2);
+            font-size: 1.5rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            flex-shrink: 0;
+            margin-top: 0.125rem;
+          }
+
+          .feature-content {
+            flex: 1;
+
+            h4 {
+              margin: 0 0 0.25rem 0;
+              font-size: 0.875rem;
+              font-weight: 600;
+              color: var(--mdc-theme-on-surface, #333);
+              text-transform: uppercase;
+              letter-spacing: 0.25px;
+            }
+
+            p {
+              margin: 0 0 0.75rem 0;
+              font-size: 0.8125rem;
+              color: var(--mdc-theme-on-surface, #666);
+              line-height: 1.4;
+            }
+
+            small {
+              font-size: 0.75rem;
+              color: var(--mdc-theme-on-surface, #999);
+              font-style: italic;
+            }
+
+            button {
+              margin-right: 0.5rem;
+              margin-bottom: 0.25rem;
+              
+              &.active {
+                background: var(--mdc-theme-primary, #1976d2);
+                color: var(--mdc-theme-on-primary, #fff);
+                border-color: var(--mdc-theme-primary, #1976d2);
+              }
+
+              @include touch-friendly-button;
+            }
+
+            .font-size-buttons {
+              display: flex;
+              gap: 0.5rem;
+              flex-wrap: wrap;
+
+              @include respond-to('sm') {
+                flex-direction: column;
+                gap: 0.25rem;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .dialog-actions {
+    @include flex-between;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    flex-shrink: 0;
+
+    @include respond-to('sm') {
+      padding: 1rem;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      button {
+        width: 100%;
+      }
+    }
+
+    button {
+      @include touch-friendly-button;
+    }
+  }
+}
+
+// High contrast mode styles
+@include high-contrast {
+  .keyboard-shortcuts-dialog {
+    .dialog-header {
+      border-bottom-color: currentColor;
+    }
+
+    .shortcuts-intro {
+      border-bottom-color: currentColor;
+    }
+
+    .shortcut-item {
+      border-bottom-color: currentColor;
+
+      .shortcut-keys .key-chip {
+        border-color: currentColor;
+        background: transparent;
+      }
+    }
+
+    .accessibility-features {
+      border-top-color: currentColor;
+
+      .feature-item {
+        border: 2px solid currentColor;
+      }
+    }
+
+    .dialog-actions {
+      border-top-color: currentColor;
+    }
+  }
+}
+
+// Dark mode styles
+@include dark-mode {
+  .keyboard-shortcuts-dialog {
+    .shortcuts-intro {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .shortcut-item {
+      border-bottom-color: rgba(255, 255, 255, 0.12);
+
+      .shortcut-keys .key-chip {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+
+      &:hover {
+        @include hover-devices {
+          background: rgba(255, 255, 255, 0.08);
+        }
+      }
+    }
+
+    .accessibility-features {
+      background: rgba(255, 255, 255, 0.05);
+
+      .feature-item {
+        background: rgba(255, 255, 255, 0.02);
+      }
+    }
+  }
+}
+
+// Reduced motion styles
+@include reduced-motion {
+  .keyboard-shortcuts-dialog {
+    .shortcut-item {
+      transition: none;
+    }
+
+    .feature-item {
+      transition: none;
+    }
+
+    button {
+      transition: none;
+    }
+  }
+}
+
+// Print styles
+@media print {
+  .keyboard-shortcuts-dialog {
+    .dialog-header .close-button {
+      display: none;
+    }
+
+    .dialog-actions {
+      display: none;
+    }
+
+    .shortcuts-intro {
+      background: transparent !important;
+    }
+
+    .accessibility-features {
+      background: transparent !important;
+
+      .feature-item {
+        box-shadow: none !important;
+        border: 1px solid black !important;
+      }
+    }
+
+    .shortcut-keys .key-chip {
+      background: transparent !important;
+      border: 1px solid black !important;
+    }
+  }
+}
+
+// Focus styles for accessibility
+.keyboard-shortcuts-dialog {
+  button:focus-visible,
+  .shortcut-item:focus-visible {
+    @include focus-visible;
+  }
+
+  .key-chip:focus-visible {
+    outline: 2px solid var(--mdc-theme-primary, #1976d2);
+    outline-offset: 2px;
+  }
+}
+
+// Loading state for dynamic content
+.shortcuts-loading {
+  @include loading-state;
+}
+
+// Animation for dialog entrance
+@keyframes dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.keyboard-shortcuts-dialog {
+  animation: dialog-enter 0.2s ease-out;
+
+  @include reduced-motion {
+    animation: none;
+  }
+}

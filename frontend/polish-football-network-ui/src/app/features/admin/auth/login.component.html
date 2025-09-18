@@ -1,0 +1,170 @@
+<div class="login-container">
+  <div class="login-wrapper">
+    <!-- Skip navigation link for accessibility -->
+    <a href="#main-content" class="skip-navigation">Skip to main content</a>
+
+    <!-- Login card -->
+    <mat-card class="login-card" role="main" id="main-content">
+      <mat-card-header>
+        <mat-card-title>
+          <h1>Admin Login</h1>
+        </mat-card-title>
+        <mat-card-subtitle>
+          Polish Football Network Administration
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Demo credentials info -->
+        <div class="demo-info" role="note" aria-label="Demo credentials">
+          <h3>Demo Credentials</h3>
+          <p><strong>Admin:</strong> username: admin, password: password123</p>
+          <p><strong>Moderator:</strong> username: moderator, password: password123</p>
+        </div>
+
+        <!-- Error message -->
+        <div
+          *ngIf="errorMessage()"
+          class="alert-accessible alert-error"
+          role="alert"
+          aria-live="polite"
+          [attr.aria-describedby]="'error-message'"
+        >
+          <mat-icon class="alert-icon" aria-hidden="true">error</mat-icon>
+          <div class="alert-content">
+            <p id="error-message" class="alert-message">{{ errorMessage() }}</p>
+          </div>
+        </div>
+
+        <!-- Login form -->
+        <form
+          [formGroup]="loginForm"
+          (ngSubmit)="onSubmit()"
+          class="login-form"
+          novalidate
+          aria-label="Login form"
+        >
+          <!-- Username field -->
+          <mat-form-field class="form-field-accessible" appearance="outline">
+            <mat-label>Username</mat-label>
+            <input
+              matInput
+              formControlName="username"
+              placeholder="Enter your username"
+              autocomplete="username"
+              [attr.aria-describedby]="getFieldError('username') ? 'username-error' : null"
+              [attr.aria-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched"
+              required
+            />
+            <mat-icon matSuffix aria-hidden="true">person</mat-icon>
+            <mat-error
+              id="username-error"
+              *ngIf="loginForm.get('username')?.touched && getFieldError('username')"
+              role="alert"
+            >
+              {{ getFieldError('username') }}
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Password field -->
+          <mat-form-field class="form-field-accessible" appearance="outline">
+            <mat-label>Password</mat-label>
+            <input
+              matInput
+              formControlName="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              [attr.aria-describedby]="getFieldError('password') ? 'password-error' : null"
+              [attr.aria-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+              required
+            />
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+              tabindex="0"
+            >
+              <mat-icon aria-hidden="true">
+                {{ showPassword() ? 'visibility_off' : 'visibility' }}
+              </mat-icon>
+            </button>
+            <mat-error
+              id="password-error"
+              *ngIf="loginForm.get('password')?.touched && getFieldError('password')"
+              role="alert"
+            >
+              {{ getFieldError('password') }}
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Remember me checkbox -->
+          <div class="checkbox-field">
+            <mat-checkbox
+              formControlName="rememberMe"
+              color="primary"
+              aria-label="Remember me for future logins"
+            >
+              Remember me
+            </mat-checkbox>
+          </div>
+
+          <!-- Submit button -->
+          <div class="submit-section">
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              class="btn-accessible login-button"
+              [disabled]="isLoading() || !isFormValid()"
+              [attr.aria-describedby]="isLoading() ? 'loading-message' : null"
+            >
+              <span *ngIf="!isLoading()">Login</span>
+              <span *ngIf="isLoading()" class="loading-content">
+                <mat-spinner diameter="20" aria-hidden="true"></mat-spinner>
+                <span id="loading-message" class="sr-only">Logging in, please wait</span>
+                Logging in...
+              </span>
+            </button>
+          </div>
+
+          <!-- Additional links -->
+          <div class="additional-links">
+            <a
+              href="/forgot-password"
+              class="forgot-password-link"
+              tabindex="0"
+              aria-label="Forgot your password? Reset it here"
+            >
+              Forgot password?
+            </a>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Footer information -->
+    <footer class="login-footer" role="contentinfo">
+      <p>&copy; 2024 Polish Football Network. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="/privacy" aria-label="Privacy Policy">Privacy Policy</a>
+        <a href="/terms" aria-label="Terms of Service">Terms of Service</a>
+        <a href="/support" aria-label="Support and Help">Support</a>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- Loading overlay for better UX -->
+<div
+  *ngIf="isLoading()"
+  class="loading-overlay"
+  role="progressbar"
+  aria-label="Logging in"
+  aria-live="polite"
+>
+  <mat-spinner diameter="50"></mat-spinner>
+  <p>Authenticating...</p>
+</div>

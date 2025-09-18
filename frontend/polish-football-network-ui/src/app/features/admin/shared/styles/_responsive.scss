@@ -1,0 +1,403 @@
+// Responsive breakpoints and utilities for admin panel
+// Standardized breakpoints used across all admin components
+
+// Breakpoint values
+$breakpoints: (
+  'xs': 320px,    // Small phones
+  'sm': 480px,    // Large phones
+  'md': 768px,    // Tablets
+  'lg': 1024px,   // Desktops
+  'xl': 1200px,   // Large desktops
+  'xxl': 1440px   // Extra large screens
+);
+
+// Media query mixins for consistent responsive behavior
+@mixin respond-to($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    $breakpoint-value: map-get($breakpoints, $breakpoint);
+    @media (max-width: $breakpoint-value) {
+      @content;
+    }
+  } @else {
+    @warn "Invalid breakpoint: #{$breakpoint}. Available breakpoints: #{map-keys($breakpoints)}";
+  }
+}
+
+@mixin respond-above($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    $breakpoint-value: map-get($breakpoints, $breakpoint);
+    @media (min-width: #{$breakpoint-value + 1px}) {
+      @content;
+    }
+  } @else {
+    @warn "Invalid breakpoint: #{$breakpoint}. Available breakpoints: #{map-keys($breakpoints)}";
+  }
+}
+
+@mixin respond-between($lower, $upper) {
+  @if map-has-key($breakpoints, $lower) and map-has-key($breakpoints, $upper) {
+    $lower-value: map-get($breakpoints, $lower);
+    $upper-value: map-get($breakpoints, $upper);
+    @media (min-width: #{$lower-value + 1px}) and (max-width: $upper-value) {
+      @content;
+    }
+  } @else {
+    @warn "Invalid breakpoints: #{$lower}, #{$upper}. Available breakpoints: #{map-keys($breakpoints)}";
+  }
+}
+
+// Touch device detection
+@mixin touch-devices {
+  @media (hover: none) and (pointer: coarse) {
+    @content;
+  }
+}
+
+@mixin hover-devices {
+  @media (hover: hover) and (pointer: fine) {
+    @content;
+  }
+}
+
+// Accessibility media queries
+@mixin high-contrast {
+  @media (prefers-contrast: high) {
+    @content;
+  }
+}
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+@mixin dark-mode {
+  @media (prefers-color-scheme: dark) {
+    @content;
+  }
+}
+
+// Container utilities
+@mixin container($max-width: 1200px) {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 1rem;
+
+  @include respond-to('md') {
+    padding: 0 0.75rem;
+  }
+
+  @include respond-to('sm') {
+    padding: 0 0.5rem;
+  }
+}
+
+// Flexbox utilities
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// Grid utilities
+@mixin grid-responsive($columns: 4, $gap: 1rem) {
+  display: grid;
+  grid-template-columns: repeat($columns, 1fr);
+  gap: $gap;
+
+  @include respond-to('lg') {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @include respond-to('md') {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  @include respond-to('sm') {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+// Typography utilities
+@mixin responsive-font($base-size: 1rem, $scale-factor: 0.875) {
+  font-size: $base-size;
+
+  @include respond-to('md') {
+    font-size: calc(#{$base-size} * #{$scale-factor});
+  }
+
+  @include respond-to('sm') {
+    font-size: calc(#{$base-size} * #{$scale-factor * $scale-factor});
+  }
+}
+
+// Spacing utilities
+@mixin responsive-padding($base: 1rem) {
+  padding: $base;
+
+  @include respond-to('md') {
+    padding: calc(#{$base} * 0.75);
+  }
+
+  @include respond-to('sm') {
+    padding: calc(#{$base} * 0.5);
+  }
+}
+
+@mixin responsive-margin($base: 1rem) {
+  margin: $base;
+
+  @include respond-to('md') {
+    margin: calc(#{$base} * 0.75);
+  }
+
+  @include respond-to('sm') {
+    margin: calc(#{$base} * 0.5);
+  }
+}
+
+// Button utilities for touch devices
+@mixin touch-friendly-button {
+  min-height: 44px; // WCAG AA recommendation
+  min-width: 44px;
+  padding: 0.75rem 1rem;
+
+  @include touch-devices {
+    min-height: 48px; // Enhanced touch target
+    min-width: 48px;
+    padding: 1rem 1.25rem;
+  }
+
+  @include respond-to('sm') {
+    padding: 0.875rem 1.125rem;
+  }
+}
+
+// Card utilities
+@mixin responsive-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+
+  @include hover-devices {
+    &:hover {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  @include respond-to('md') {
+    border-radius: 6px;
+  }
+
+  @include respond-to('sm') {
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  }
+}
+
+// Animation utilities
+@mixin smooth-transition($properties: all, $duration: 0.2s, $easing: ease) {
+  transition: #{$properties} $duration $easing;
+
+  @include reduced-motion {
+    transition-duration: 0.01ms;
+  }
+}
+
+// Focus utilities for accessibility
+@mixin focus-visible {
+  &:focus-visible {
+    outline: 2px solid var(--mdc-theme-primary, #1976d2);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  @include high-contrast {
+    &:focus-visible {
+      outline-width: 3px;
+      outline-color: currentColor;
+    }
+  }
+}
+
+// Utility classes for common responsive patterns
+.admin-hide-mobile {
+  @include respond-to('md') {
+    display: none !important;
+  }
+}
+
+.admin-hide-desktop {
+  display: none;
+
+  @include respond-to('md') {
+    display: block !important;
+  }
+}
+
+.admin-show-mobile {
+  display: none;
+
+  @include respond-to('md') {
+    display: block !important;
+  }
+}
+
+.admin-responsive-grid {
+  @include grid-responsive(4, 1rem);
+}
+
+.admin-responsive-text {
+  @include responsive-font(1rem, 0.875);
+}
+
+.admin-touch-button {
+  @include touch-friendly-button;
+}
+
+.admin-responsive-card {
+  @include responsive-card;
+}
+
+// Loading states for touch devices
+@mixin loading-state {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    animation: loading-shimmer 1.5s infinite;
+  }
+
+  @include reduced-motion {
+    &::after {
+      animation: none;
+      opacity: 0.1;
+    }
+  }
+}
+
+@keyframes loading-shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+// Print styles for admin reports
+@mixin print-styles {
+  @media print {
+    * {
+      color: black !important;
+      background: white !important;
+      box-shadow: none !important;
+    }
+
+    .admin-hide-print {
+      display: none !important;
+    }
+
+    .admin-nav,
+    .admin-sidebar,
+    .admin-toolbar {
+      display: none !important;
+    }
+
+    .admin-content {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+    }
+  }
+}
+
+// Performance optimization for large lists
+@mixin virtual-scroll-container {
+  height: 400px;
+  overflow: auto;
+
+  @include respond-to('md') {
+    height: 300px;
+  }
+
+  @include respond-to('sm') {
+    height: 250px;
+  }
+}
+
+// Safe area support for mobile devices with notches
+@mixin safe-area-support {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+// Scroll behavior utilities
+@mixin smooth-scroll {
+  scroll-behavior: smooth;
+
+  @include reduced-motion {
+    scroll-behavior: auto;
+  }
+}
+
+// Consistent spacing scale
+$spacing-scale: (
+  'xs': 0.25rem,  // 4px
+  'sm': 0.5rem,   // 8px
+  'md': 1rem,     // 16px
+  'lg': 1.5rem,   // 24px
+  'xl': 2rem,     // 32px
+  'xxl': 3rem     // 48px
+);
+
+@function spacing($size) {
+  @return map-get($spacing-scale, $size);
+}
+
+// Z-index scale for layering
+$z-index-scale: (
+  'dropdown': 1000,
+  'sticky': 1020,
+  'fixed': 1030,
+  'modal-backdrop': 1040,
+  'modal': 1050,
+  'popover': 1060,
+  'tooltip': 1070
+);
+
+@function z-index($layer) {
+  @return map-get($z-index-scale, $layer);
+}

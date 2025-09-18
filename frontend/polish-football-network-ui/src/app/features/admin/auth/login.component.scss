@@ -1,0 +1,388 @@
+@import '../shared/styles/responsive';
+@import '../shared/styles/accessibility';
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem;
+  position: relative;
+
+  @include respond-to('sm') {
+    padding: 0.5rem;
+  }
+}
+
+.login-wrapper {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.login-card {
+  @include responsive-card;
+  padding: 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.95);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+
+  .mat-mdc-card-header {
+    background: var(--mdc-theme-primary, #1976d2);
+    color: var(--mdc-theme-on-primary, #ffffff);
+    padding: 2rem 2rem 1rem;
+    text-align: center;
+
+    .mat-mdc-card-title {
+      margin: 0;
+      font-size: 1.75rem;
+      font-weight: 600;
+
+      h1 {
+        margin: 0;
+        font-size: inherit;
+        font-weight: inherit;
+      }
+    }
+
+    .mat-mdc-card-subtitle {
+      margin: 0.5rem 0 0;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.875rem;
+    }
+  }
+
+  .mat-mdc-card-content {
+    padding: 2rem;
+
+    @include respond-to('sm') {
+      padding: 1.5rem;
+    }
+  }
+
+  @include high-contrast {
+    border: 2px solid currentColor;
+    background: var(--mdc-theme-surface, #ffffff);
+  }
+}
+
+.demo-info {
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+
+  h3 {
+    margin: 0 0 0.5rem;
+    color: #1976d2;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0.25rem 0;
+
+    strong {
+      color: #0d47a1;
+    }
+  }
+
+  @include high-contrast {
+    background: transparent;
+    border: 2px solid currentColor;
+  }
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  .mat-mdc-form-field {
+    width: 100%;
+
+    .mat-mdc-text-field-wrapper {
+      border-radius: 8px;
+    }
+
+    &.mat-form-field-invalid {
+      .mat-mdc-text-field-wrapper {
+        border-color: var(--mdc-theme-error, #f44336);
+      }
+    }
+  }
+
+  .checkbox-field {
+    margin: 0.5rem 0;
+
+    .mat-mdc-checkbox {
+      .mdc-form-field {
+        color: var(--mdc-theme-on-surface, #333);
+      }
+    }
+  }
+
+  .submit-section {
+    margin-top: 1rem;
+
+    .login-button {
+      width: 100%;
+      height: 48px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: none;
+      @include touch-friendly-button;
+
+      .loading-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+
+        mat-spinner {
+          margin-right: 0.5rem;
+        }
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      @include focus-visible;
+    }
+  }
+
+  .additional-links {
+    text-align: center;
+    margin-top: 1rem;
+
+    .forgot-password-link {
+      color: var(--mdc-theme-primary, #1976d2);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.2s ease;
+
+      &:hover,
+      &:focus {
+        color: var(--mdc-theme-primary-dark, #1565c0);
+        text-decoration: underline;
+      }
+
+      @include focus-visible;
+
+      @include reduced-motion {
+        transition: none;
+      }
+    }
+  }
+}
+
+.login-footer {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+
+  p {
+    margin: 0 0 0.5rem;
+  }
+
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+
+    a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      transition: color 0.2s ease;
+
+      &:hover,
+      &:focus {
+        color: white;
+        text-decoration: underline;
+      }
+
+      @include focus-visible;
+
+      @include reduced-motion {
+        transition: none;
+      }
+    }
+
+    @include respond-to('sm') {
+      gap: 0.5rem;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  color: white;
+
+  mat-spinner {
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1.125rem;
+    margin: 0;
+  }
+}
+
+// Dark theme support
+.dark-theme {
+  .login-card {
+    background: rgba(66, 66, 66, 0.95);
+    color: rgba(255, 255, 255, 0.87);
+
+    .mat-mdc-card-content {
+      color: rgba(255, 255, 255, 0.87);
+    }
+  }
+
+  .demo-info {
+    background: rgba(25, 118, 210, 0.1);
+    border-color: rgba(25, 118, 210, 0.3);
+    color: rgba(255, 255, 255, 0.87);
+
+    h3 {
+      color: #90caf9;
+    }
+
+    strong {
+      color: #bbdefb;
+    }
+  }
+}
+
+// Reduced motion support
+@include reduced-motion {
+  .login-card {
+    background: #ffffff;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .login-container {
+    background: #f5f5f5;
+  }
+}
+
+// High contrast mode
+@include high-contrast {
+  .login-container {
+    background: #ffffff;
+  }
+
+  .login-card {
+    .mat-mdc-card-header {
+      background: transparent;
+      color: currentColor;
+      border-bottom: 2px solid currentColor;
+    }
+  }
+
+  .loading-overlay {
+    background: #ffffff;
+    color: #000000;
+    border: 2px solid currentColor;
+  }
+}
+
+// Print styles
+@media print {
+  .login-container {
+    background: white;
+    color: black;
+  }
+
+  .login-card {
+    box-shadow: none;
+    border: 1px solid black;
+    background: white;
+  }
+
+  .demo-info,
+  .loading-overlay {
+    display: none !important;
+  }
+}
+
+// Focus trap for accessibility
+.login-card {
+  &:focus-within {
+    outline: 2px solid var(--mdc-theme-primary, #1976d2);
+    outline-offset: 2px;
+  }
+}
+
+// Screen reader enhancements
+.sr-only {
+  @extend .sr-only;
+}
+
+// Touch device optimizations
+@include touch-device {
+  .login-card {
+    .mat-mdc-card-content {
+      padding: 1.5rem;
+    }
+  }
+
+  .login-form {
+    .mat-mdc-form-field {
+      .mat-mdc-text-field-wrapper {
+        min-height: 48px;
+      }
+    }
+
+    .submit-section .login-button {
+      height: 52px;
+      font-size: 1.125rem;
+    }
+  }
+}
+
+// Animation for loading states
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.loading-content {
+  mat-spinner {
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @include reduced-motion {
+    mat-spinner {
+      animation: none;
+    }
+  }
+}
