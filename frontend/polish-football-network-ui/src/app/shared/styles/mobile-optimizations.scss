@@ -1,0 +1,428 @@
+/* Mobile optimizations and UX adaptations for Polish Football Network */
+
+/* Touch target sizing */
+.mobile-optimized {
+  /* Minimum touch target size following WCAG and platform guidelines */
+  --touch-target-min: 44px;
+  --touch-target-recommended: 48px;
+  --touch-target-large: 56px;
+
+  /* Spacing for touch interfaces */
+  --touch-spacing-small: 8px;
+  --touch-spacing-medium: 16px;
+  --touch-spacing-large: 24px;
+
+  /* Animation durations for mobile */
+  --mobile-animation-fast: 150ms;
+  --mobile-animation-medium: 250ms;
+  --mobile-animation-slow: 400ms;
+}
+
+/* Enhanced touch targets for mobile */
+.graph-layout.mobile .mat-icon-button,
+.graph-layout.mobile .mat-fab,
+.graph-layout.mobile .mat-mini-fab {
+  min-width: var(--touch-target-recommended);
+  min-height: var(--touch-target-recommended);
+  width: var(--touch-target-recommended);
+  height: var(--touch-target-recommended);
+}
+
+.graph-layout.mobile .mat-raised-button,
+.graph-layout.mobile .mat-flat-button,
+.graph-layout.mobile .mat-stroked-button {
+  min-height: var(--touch-target-recommended);
+  padding: 0 var(--touch-spacing-medium);
+}
+
+/* Larger touch targets for primary actions */
+.graph-layout.mobile .primary-action {
+  min-height: var(--touch-target-large);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Improved spacing between interactive elements */
+.graph-layout.mobile .toolbar-component .mat-icon-button {
+  margin: 0 var(--touch-spacing-small);
+}
+
+.graph-layout.mobile .floating-actions .fab {
+  margin-bottom: var(--touch-spacing-medium);
+}
+
+.graph-layout.mobile .action-buttons {
+  gap: var(--touch-spacing-medium);
+  margin-top: var(--touch-spacing-large);
+}
+
+.graph-layout.mobile .action-buttons .mat-raised-button {
+  min-height: var(--touch-target-large);
+}
+
+/* Enhanced form controls for mobile */
+.graph-layout.mobile .mat-form-field {
+  margin-bottom: var(--touch-spacing-medium);
+}
+
+.graph-layout.mobile .mat-form-field .mat-input-element {
+  min-height: var(--touch-target-recommended);
+  font-size: 16px; /* Prevents zoom on iOS */
+}
+
+.graph-layout.mobile .mat-select {
+  min-height: var(--touch-target-recommended);
+}
+
+.graph-layout.mobile .mat-checkbox,
+.graph-layout.mobile .mat-radio-button {
+  margin-bottom: var(--touch-spacing-medium);
+}
+
+.graph-layout.mobile .mat-checkbox .mat-checkbox-inner-container,
+.graph-layout.mobile .mat-radio-button .mat-radio-outer-circle {
+  width: 24px;
+  height: 24px;
+}
+
+/* List items with better touch targets */
+.graph-layout.mobile .mat-list-item {
+  min-height: var(--touch-target-large);
+  padding: 0 var(--touch-spacing-medium);
+}
+
+.graph-layout.mobile .mat-list-item .mat-list-item-content {
+  padding: var(--touch-spacing-small) 0;
+}
+
+/* Bottom sheet enhancements */
+.mobile-bottom-sheet .mat-list-item {
+  min-height: var(--touch-target-large);
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.mobile-bottom-sheet .mat-list-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.mobile-bottom-sheet .mat-list-item:active {
+  background: rgba(0, 0, 0, 0.08);
+  transform: scale(0.98);
+  transition: all var(--mobile-animation-fast) ease;
+}
+
+/* Sidenav improvements for mobile */
+.graph-layout.mobile .mat-sidenav {
+  width: min(320px, 85vw);
+  box-shadow: 0 8px 10px -5px rgba(0, 0, 0, 0.2),
+              0 16px 24px 2px rgba(0, 0, 0, 0.14),
+              0 6px 30px 5px rgba(0, 0, 0, 0.12);
+}
+
+.graph-layout.mobile .mat-sidenav .sidebar-content {
+  padding: var(--touch-spacing-medium);
+  padding-top: var(--touch-spacing-large);
+}
+
+/* Toolbar adaptations */
+.graph-layout.mobile .main-toolbar.bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: white;
+  border-top: 1px solid #e0e0e0;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+  padding: var(--touch-spacing-small) var(--touch-spacing-medium);
+}
+
+.graph-layout.mobile .main-toolbar.floating {
+  position: fixed;
+  top: var(--touch-spacing-medium);
+  left: var(--touch-spacing-medium);
+  right: var(--touch-spacing-medium);
+  z-index: 1000;
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: var(--touch-spacing-small) var(--touch-spacing-medium);
+}
+
+/* Content adjustments for bottom toolbar */
+.graph-layout.mobile .graph-container {
+  padding-bottom: 72px; /* Space for bottom toolbar */
+}
+
+.graph-layout.mobile .main-toolbar.bottom ~ .graph-container {
+  padding-bottom: 0;
+}
+
+/* Compact mode styling */
+.graph-layout.compact .toolbar-component {
+  padding: var(--touch-spacing-small);
+}
+
+.graph-layout.compact .toolbar-component .mat-icon-button {
+  width: 40px;
+  height: 40px;
+  margin: 0 2px;
+}
+
+.graph-layout.compact .sidebar-content {
+  padding: var(--touch-spacing-small);
+}
+
+.graph-layout.compact .legend-component {
+  font-size: 14px;
+}
+
+/* Single panel mode */
+.graph-layout.single-panel .mat-sidenav-container {
+  /* Ensure only one panel is visible at a time */
+}
+
+.graph-layout.single-panel .left-sidebar.mat-sidenav-opened ~ .mat-sidenav-content .right-sidebar {
+  display: none;
+}
+
+/* Gesture feedback */
+.touch-feedback {
+  position: relative;
+  overflow: hidden;
+}
+
+.touch-feedback::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition: all var(--mobile-animation-fast) ease;
+}
+
+.touch-feedback:active::after {
+  width: 100px;
+  height: 100px;
+}
+
+/* Swipe indicators */
+.swipe-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity var(--mobile-animation-medium) ease;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.swipe-indicator.left {
+  left: var(--touch-spacing-medium);
+}
+
+.swipe-indicator.right {
+  right: var(--touch-spacing-medium);
+}
+
+.swipe-indicator.visible {
+  opacity: 0.7;
+}
+
+.swipe-indicator .mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Loading states for mobile */
+.graph-layout.mobile .loading-overlay {
+  backdrop-filter: blur(4px);
+}
+
+.graph-layout.mobile .loading-spinner {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  animation: mobile-spin 1s linear infinite;
+}
+
+@keyframes mobile-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Empty state improvements */
+.graph-layout.mobile .empty-state {
+  padding: var(--touch-spacing-large);
+  text-align: center;
+}
+
+.graph-layout.mobile .empty-state .mat-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  margin-bottom: var(--touch-spacing-medium);
+  opacity: 0.5;
+}
+
+.graph-layout.mobile .empty-state h3 {
+  margin-bottom: var(--touch-spacing-medium);
+  font-size: 20px;
+}
+
+.graph-layout.mobile .empty-state p {
+  margin-bottom: var(--touch-spacing-large);
+  color: #666;
+  line-height: 1.5;
+}
+
+/* Accessibility improvements for mobile */
+.graph-layout.mobile [aria-label],
+.graph-layout.mobile [matTooltip] {
+  /* Ensure tooltips work well on touch devices */
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .graph-layout.mobile .mat-icon-button,
+  .graph-layout.mobile .mat-fab {
+    border: 2px solid currentColor;
+  }
+
+  .graph-layout.mobile .mat-sidenav {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion preferences */
+.graph-layout.reduced-animations * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+.graph-layout.reduced-animations .touch-feedback::after {
+  transition: none;
+}
+
+.graph-layout.reduced-animations .swipe-indicator {
+  transition: none;
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .graph-layout.mobile .mat-sidenav {
+    background: #303030;
+    color: white;
+  }
+
+  .graph-layout.mobile .main-toolbar {
+    background: #424242;
+    color: white;
+    border-color: #616161;
+  }
+
+  .mobile-bottom-sheet {
+    background: #303030;
+    color: white;
+  }
+
+  .mobile-bottom-sheet .sheet-header {
+    border-color: #616161;
+  }
+}
+
+/* Simplified rendering mode */
+.graph-layout.simplified-rendering .cytoscape-container {
+  /* Reduce visual complexity for performance */
+}
+
+.graph-layout.simplified-rendering .mat-elevation-z2,
+.graph-layout.simplified-rendering .mat-elevation-z4,
+.graph-layout.simplified-rendering .mat-elevation-z8 {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.graph-layout.simplified-rendering .mat-icon {
+  /* Simplify icon rendering */
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Safe area handling for devices with notches */
+.graph-layout.mobile {
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.graph-layout.mobile .main-toolbar.bottom {
+  padding-bottom: calc(var(--touch-spacing-medium) + env(safe-area-inset-bottom));
+}
+
+/* Keyboard navigation improvements */
+.graph-layout.mobile [tabindex]:focus {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+}
+
+.graph-layout.mobile .mat-list-item:focus {
+  background: rgba(25, 118, 210, 0.1);
+}
+
+/* Print styles */
+@media print {
+  .graph-layout.mobile .mat-sidenav,
+  .graph-layout.mobile .floating-actions,
+  .graph-layout.mobile .main-toolbar {
+    display: none !important;
+  }
+
+  .graph-layout.mobile .graph-content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* Responsive breakpoints */
+@media (max-width: 599px) {
+  :root {
+    --touch-target-min: 48px;
+    --touch-target-recommended: 52px;
+    --touch-target-large: 60px;
+  }
+}
+
+@media (max-width: 359px) {
+  /* Extra small devices */
+  .graph-layout.mobile .mat-sidenav {
+    width: 95vw;
+  }
+
+  .graph-layout.mobile .sidebar-content {
+    padding: var(--touch-spacing-small);
+  }
+}
+
+/* Orientation specific styles */
+@media (orientation: landscape) and (max-height: 500px) {
+  .graph-layout.mobile .main-toolbar {
+    padding: var(--touch-spacing-small) var(--touch-spacing-medium);
+  }
+
+  .graph-layout.mobile .sidebar-content {
+    padding: var(--touch-spacing-small);
+  }
+}

@@ -5,8 +5,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, combineLatest } from 'rxjs';
 
 // Import our interactive components
 import { GraphToolbarComponent } from './graph-toolbar.component';
@@ -14,6 +15,11 @@ import { GraphSearchComponent } from './graph-search.component';
 import { GraphFilterPanelComponent } from './graph-filter-panel.component';
 import { GraphClubInfoPanelComponent } from './graph-club-info-panel.component';
 import { GraphLegendComponent } from './graph-legend.component';
+
+// Import mobile services
+import { MobileTouchService } from '../../../core/services/mobile-touch.service';
+import { MobileOptimizationService } from '../../../core/services/mobile-optimization.service';
+import { MobileLayoutService } from '../../../core/services/mobile-layout.service';
 
 // Import services and models
 import { GraphService } from '../../../core/services/graph.service';
@@ -36,6 +42,7 @@ import { GraphFilterCriteria, GraphLayoutType, GraphExportOptions } from '../../
     MatTooltipModule,
     MatSidenavModule,
     MatToolbarModule,
+    MatBottomSheetModule,
     GraphToolbarComponent,
     GraphSearchComponent,
     GraphFilterPanelComponent,
@@ -43,7 +50,14 @@ import { GraphFilterCriteria, GraphLayoutType, GraphExportOptions } from '../../
     GraphLegendComponent
   ],
   template: `
-    <div class="graph-layout" [class.mobile]="isMobile()">
+    <div class="graph-layout"
+         [class.mobile]="getIsMobile()"
+         [class.tablet]="getIsTablet()"
+         [class.portrait]="getIsPortrait()"
+         [class.reduced-animations]="shouldReduceAnimations()"
+         [class.simplified-rendering]="shouldSimplifyRendering()"
+         [class.compact]="getCurrentLayoutConfig().compactMode"
+         [class.single-panel]="getCurrentLayoutConfig().singlePanelMode">
       <!-- Main toolbar -->
       <div class="main-toolbar">
         <app-graph-toolbar
@@ -468,6 +482,11 @@ export class GraphLayoutComponent implements OnInit, OnDestroy {
   private readonly notificationService = inject(NotificationService);
   private readonly breakpointObserver = inject(BreakpointObserver);
 
+  // Mobile services
+  private readonly mobileTouchService = inject(MobileTouchService);
+  private readonly mobileOptimizationService = inject(MobileOptimizationService);
+  private readonly mobileLayoutService = inject(MobileLayoutService);
+
   // ViewChild references
   @ViewChild('graphContainer', { static: true }) graphContainer!: ElementRef;
   @ViewChild('cytoscapeContainer', { static: true }) cytoscapeContainer!: ElementRef;
@@ -482,6 +501,14 @@ export class GraphLayoutComponent implements OnInit, OnDestroy {
   public readonly showLegend = signal<boolean>(true);
   public readonly selectedClub = signal<ClubDto | null>(null);
   public readonly isClubInfoVisible = signal<boolean>(false);
+
+  // Mobile-specific state
+  public readonly currentBreakpoint = this.mobileLayoutService.currentBreakpoint;
+  public readonly layoutConfig = this.mobileLayoutService.layoutConfig;
+  public readonly panelStates = this.mobileLayoutService.panelStates;
+  public readonly activePanel = this.mobileLayoutService.activePanel;
+  public readonly performanceSettings = this.mobileOptimizationService.performanceSettings;
+  public readonly isLowPowerMode = this.mobileOptimizationService.isLowPowerMode;
 
   // Graph data
   public readonly graphStats = computed(() => {
@@ -525,13 +552,117 @@ export class GraphLayoutComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.setupBreakpointObserver();
+    this.setupMobileServices();
     this.initializeGraph();
     this.loadGraphData();
   }
 
   ngOnDestroy(): void {
+    this.mobileTouchService.destroy();
+    this.mobileOptimizationService.destroy();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /// <summary>
+  /// Setup mobile services and integration.
+  /// </summary>
+  private setupMobileServices(): void {
+    // Subscribe to layout changes
+    this.mobileLayoutService.currentBreakpoint
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(breakpoint => {
+        this.isMobile.set(breakpoint.name === 'mobile' || breakpoint.name === 'tablet');
+
+        // Update graph settings based on device
+        if (breakpoint.name === 'mobile') {
+          this.showLegend.set(false);
+        }
+      });
+
+    // Subscribe to performance settings changes
+    this.mobileOptimizationService.performanceSettings
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(settings => {
+        if (settings && this.graphService.cytoscapeInstance) {
+          // Apply performance optimizations to graph
+          this.applyPerformanceSettings(settings);
+        }
+      });
+
+    // Subscribe to panel state changes
+    this.mobileLayoutService.activePanel
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(activePanel => {
+        this.updatePanelVisibility(activePanel);
+      });
+  }
+
+  /// <summary>
+  /// Apply performance settings to graph visualization.
+  /// </summary>
+  private applyPerformanceSettings(settings: any): void {
+    if (!this.graphService.cytoscapeInstance) return;
+
+    const cy = this.graphService.cytoscapeInstance;
+
+    // Apply animation settings
+    if (!settings.enableAnimations || settings.prefersReducedMotion) {
+      cy.style().selector('*').style('transition-duration', '0ms').update();
+    } else {
+      const duration = `${settings.animationDuration}ms`;
+      cy.style().selector('*').style('transition-duration', duration).update();
+    }
+
+    // Apply rendering quality
+    if (settings.renderQuality === 'low') {
+      cy.style()
+        .selector('node')
+        .style('text-opacity', 0)
+        .style('border-width', 1)
+        .update();
+    } else if (settings.renderQuality === 'medium') {
+      cy.style()
+        .selector('node')
+        .style('text-opacity', 0.8)
+        .style('border-width', 2)
+        .update();
+    }
+  }
+
+  /// <summary>
+  /// Update panel visibility based on active panel.
+  /// </summary>
+  private updatePanelVisibility(activePanel: string | null): void {
+    if (!activePanel) {
+      this.closeAllPanels();
+      return;
+    }
+
+    switch (activePanel) {
+      case 'search':
+        this.leftSidenav?.open();
+        break;
+      case 'filter':
+        this.leftSidenav?.open();
+        break;
+      case 'clubInfo':
+        this.isClubInfoVisible.set(true);
+        if (this.mobileLayoutService.getIsMobile()) {
+          this.rightSidenav?.open();
+        }
+        break;
+    }
+  }
+
+  /// <summary>
+  /// Close all panels.
+  /// </summary>
+  private closeAllPanels(): void {
+    this.leftSidenav?.close();
+    this.rightSidenav?.close();
+    this.isClubInfoVisible.set(false);
+    this.isMobileMenuOpen.set(false);
   }
 
   /// <summary>
@@ -555,6 +686,164 @@ export class GraphLayoutComponent implements OnInit, OnDestroy {
   private initializeGraph(): void {
     // Initialize Cytoscape graph
     this.graphService.initializeGraph(this.cytoscapeContainer.nativeElement);
+
+    // Setup mobile touch interactions
+    this.setupMobileTouchIntegration();
+  }
+
+  /// <summary>
+  /// Setup mobile touch integration with graph.
+  /// </summary>
+  private setupMobileTouchIntegration(): void {
+    if (!this.cytoscapeContainer?.nativeElement) return;
+
+    const element = this.cytoscapeContainer.nativeElement;
+
+    // Setup touch gestures
+    this.mobileTouchService.enableTouchGestures(element, {
+      onTap: (event) => this.handleTouchTap(event),
+      onDoubleTap: (event) => this.handleTouchDoubleTap(event),
+      onPinch: (event) => this.handleTouchPinch(event),
+      onPan: (event) => this.handleTouchPan(event),
+      onSwipe: (event) => this.handleTouchSwipe(event)
+    });
+
+    // Enable haptic feedback for mobile
+    if (this.mobileLayoutService.getIsMobile() && this.mobileLayoutService.getIsTouch()) {
+      this.mobileTouchService.enableHapticFeedback();
+    }
+  }
+
+  /// <summary>
+  /// Handle touch tap events.
+  /// </summary>
+  private handleTouchTap(event: TouchEvent): void {
+    // Handle node/edge selection
+    const target = event.target as Element;
+    const nodeElement = target.closest('[data-node-id]');
+    const edgeElement = target.closest('[data-edge-id]');
+
+    if (nodeElement) {
+      const nodeId = nodeElement.getAttribute('data-node-id');
+      if (nodeId) {
+        this.mobileTouchService.triggerHapticFeedback('light');
+        // Handle node selection
+        this.onNodeSelected(nodeId);
+      }
+    } else if (edgeElement) {
+      const edgeId = edgeElement.getAttribute('data-edge-id');
+      if (edgeId) {
+        this.mobileTouchService.triggerHapticFeedback('light');
+        // Handle edge selection
+        this.onEdgeSelected(edgeId);
+      }
+    } else {
+      // Clear selection on empty space tap
+      this.onClearSelection();
+    }
+  }
+
+  /// <summary>
+  /// Handle touch double tap events (zoom to fit).
+  /// </summary>
+  private handleTouchDoubleTap(event: TouchEvent): void {
+    this.mobileTouchService.triggerHapticFeedback('medium');
+    this.onZoomFit();
+  }
+
+  /// <summary>
+  /// Handle touch pinch events (zoom).
+  /// </summary>
+  private handleTouchPinch(event: any): void {
+    const scale = event.scale || 1;
+
+    // Apply zoom based on pinch scale
+    // This would integrate with Cytoscape's zoom functionality
+    if (scale > 1.1) {
+      this.onZoomIn();
+    } else if (scale < 0.9) {
+      this.onZoomOut();
+    }
+  }
+
+  /// <summary>
+  /// Handle touch pan events (graph panning).
+  /// </summary>
+  private handleTouchPan(event: any): void {
+    // Handle graph panning
+    // This would integrate with Cytoscape's pan functionality
+    const deltaX = event.deltaX || 0;
+    const deltaY = event.deltaY || 0;
+
+    // Apply pan offset
+    // The actual implementation would depend on Cytoscape API
+    console.log('Pan delta:', { deltaX, deltaY });
+  }
+
+  /// <summary>
+  /// Handle touch swipe events (navigation).
+  /// </summary>
+  private handleTouchSwipe(event: any): void {
+    const direction = event.direction;
+
+    switch (direction) {
+      case 'left':
+        this.mobileLayoutService.openPanel('filter');
+        break;
+      case 'right':
+        this.mobileLayoutService.openPanel('search');
+        break;
+      case 'up':
+        if (this.selectedClub()) {
+          this.mobileLayoutService.openPanel('clubInfo');
+        }
+        break;
+      case 'down':
+        this.mobileLayoutService.closeAllPanels();
+        break;
+    }
+
+    this.mobileTouchService.triggerHapticFeedback('light');
+  }
+
+  /// <summary>
+  /// Handle node selection.
+  /// </summary>
+  private onNodeSelected(nodeId: string): void {
+    // Find club by ID and set as selected
+    const graphData = this.graphService.graphData();
+    if (graphData) {
+      const club = graphData.nodes.find(node => node.data.id === nodeId)?.data;
+      if (club) {
+        this.selectedClub.set(club);
+        this.isClubInfoVisible.set(true);
+
+        // Open club info panel on mobile
+        if (this.mobileLayoutService.getIsMobile()) {
+          this.mobileLayoutService.openPanel('clubInfo');
+        }
+      }
+    }
+  }
+
+  /// <summary>
+  /// Handle edge selection.
+  /// </summary>
+  private onEdgeSelected(edgeId: string): void {
+    // Handle connection selection
+    console.log('Edge selected:', edgeId);
+  }
+
+  /// <summary>
+  /// Handle clearing selection.
+  /// </summary>
+  private onClearSelection(): void {
+    this.selectedClub.set(null);
+    this.isClubInfoVisible.set(false);
+
+    if (this.mobileLayoutService.getIsMobile()) {
+      this.mobileLayoutService.closePanel('clubInfo');
+    }
   }
 
   /// <summary>
@@ -695,8 +984,78 @@ export class GraphLayoutComponent implements OnInit, OnDestroy {
   }
 
   // Mobile specific handlers
+  // Mobile-specific event handlers
   public toggleMobileMenu(): void {
-    this.isMobileMenuOpen.set(!this.isMobileMenuOpen());
+    this.mobileLayoutService.toggleMenu();
+  }
+
+  public onToggleSearch(): void {
+    this.mobileLayoutService.togglePanel('search');
+  }
+
+  public onToggleFilters(): void {
+    this.mobileLayoutService.togglePanel('filter');
+  }
+
+  public onToggleLegend(): void {
+    const currentValue = this.showLegend();
+    this.showLegend.set(!currentValue);
+
+    if (this.mobileLayoutService.getIsMobile()) {
+      this.mobileLayoutService.togglePanel('legend');
+    }
+  }
+
+  public onCloseClubInfo(): void {
+    this.selectedClub.set(null);
+    this.isClubInfoVisible.set(false);
+    this.mobileLayoutService.closePanel('clubInfo');
+  }
+
+  public onRefreshData(): void {
+    this.loadGraphData();
+  }
+
+  // Panel management for mobile layout
+  public isPanelOpen(panelName: string): boolean {
+    return this.mobileLayoutService.isPanelOpen(panelName);
+  }
+
+  public openPanel(panelName: string): void {
+    this.mobileLayoutService.openPanel(panelName);
+  }
+
+  public closePanel(panelName: string): void {
+    this.mobileLayoutService.closePanel(panelName);
+  }
+
+  // Mobile layout utilities
+  public getIsMobile(): boolean {
+    return this.mobileLayoutService.getIsMobile();
+  }
+
+  public getIsTablet(): boolean {
+    return this.mobileLayoutService.getIsTablet();
+  }
+
+  public getIsHandset(): boolean {
+    return this.mobileLayoutService.getIsHandset();
+  }
+
+  public getIsPortrait(): boolean {
+    return this.mobileLayoutService.getIsPortrait();
+  }
+
+  public getCurrentLayoutConfig(): any {
+    return this.mobileLayoutService.getCurrentLayoutConfig();
+  }
+
+  public shouldReduceAnimations(): boolean {
+    return this.mobileOptimizationService.shouldReduceAnimations();
+  }
+
+  public shouldSimplifyRendering(): boolean {
+    return this.mobileOptimizationService.shouldSimplifyRendering();
   }
 
   public onToggleSearch(): void {
