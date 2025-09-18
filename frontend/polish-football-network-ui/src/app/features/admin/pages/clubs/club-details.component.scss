@@ -1,0 +1,681 @@
+// Club Details Component Styles
+.club-details-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  min-height: 100vh;
+  position: relative;
+  background-color: var(--background-color);
+
+  &.embedded {
+    padding: 0;
+    min-height: auto;
+  }
+
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    gap: 1rem;
+    
+    p {
+      margin: 0;
+      color: var(--text-secondary);
+    }
+  }
+}
+
+// Header toolbar styles
+.details-toolbar {
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 8px;
+  
+  .toolbar-title {
+    flex: 1;
+    margin-left: 1rem;
+    
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
+    
+    .club-badges {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.5rem;
+      
+      .verified-badge {
+        color: #4caf50;
+        font-size: 20px;
+      }
+      
+      .featured-badge {
+        color: #ff9800;
+        font-size: 20px;
+      }
+    }
+  }
+  
+  .toolbar-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+}
+
+// Edit container
+.edit-container {
+  width: 100%;
+}
+
+// Details content
+.details-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+// Overview card styles
+.overview-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  .club-header {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    
+    .club-logo {
+      flex-shrink: 0;
+      
+      .logo-image {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        border-radius: 8px;
+        border: 1px solid var(--border-light);
+      }
+    }
+    
+    .no-logo-placeholder {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      background-color: var(--background-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-light);
+      
+      .mat-icon {
+        font-size: 40px;
+        width: 40px;
+        height: 40px;
+      }
+    }
+    
+    .club-info {
+      flex: 1;
+      min-width: 0;
+      
+      .mat-mdc-card-title {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+      }
+      
+      .mat-mdc-card-subtitle {
+        font-size: 1.125rem;
+        margin-bottom: 1rem;
+        color: var(--text-secondary);
+      }
+      
+      .club-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        
+        span {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: var(--text-secondary);
+          
+          .mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+          }
+        }
+      }
+    }
+  }
+
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 1rem;
+  }
+
+  .info-section {
+    h3 {
+      margin: 0 0 1rem 0;
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 0.5rem;
+    }
+    
+    .info-grid {
+      display: grid;
+      gap: 0.75rem;
+      
+      .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border-light);
+        
+        &:last-child {
+          border-bottom: none;
+        }
+        
+        strong {
+          font-weight: 500;
+          color: var(--text-primary);
+        }
+        
+        span {
+          color: var(--text-secondary);
+          text-align: right;
+          
+          &.monospace {
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            background-color: var(--background-light);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+          }
+        }
+      }
+    }
+    
+    .contact-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      
+      .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        
+        .mat-icon {
+          color: var(--primary-color);
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
+        
+        a {
+          color: var(--primary-color);
+          text-decoration: none;
+          
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+    
+    .colors-display {
+      display: flex;
+      gap: 1rem;
+      
+      .color-swatch {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 2px solid var(--border-color);
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+    }
+  }
+
+  .description-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-light);
+    
+    h3 {
+      margin: 0 0 1rem 0;
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    
+    .club-description {
+      line-height: 1.6;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+    }
+  }
+}
+
+// Tabs card styles
+.tabs-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+
+  .mat-mdc-tab-group {
+    .mat-mdc-tab-header {
+      background-color: var(--background-light);
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .mat-mdc-tab-body-wrapper {
+      padding: 0;
+    }
+  }
+
+  .tab-content {
+    padding: 1.5rem;
+    min-height: 300px;
+  }
+}
+
+// Tab content styles
+.connections-header,
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  
+  h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+}
+
+.location-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  
+  .club-map {
+    height: 400px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+  }
+  
+  .coordinates {
+    background-color: var(--background-light);
+    padding: 1rem;
+    border-radius: 8px;
+    
+    h4 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    
+    p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+// Empty states
+.no-position,
+.no-connections,
+.no-activity,
+.no-club {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  
+  .mat-icon {
+    font-size: 4rem;
+    width: 4rem;
+    height: 4rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+  }
+  
+  h3, h2 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+  }
+  
+  h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  
+  p {
+    margin: 0 0 2rem 0;
+    color: var(--text-secondary);
+    max-width: 400px;
+  }
+}
+
+.no-club-icon {
+  font-size: 6rem !important;
+  width: 6rem !important;
+  height: 6rem !important;
+}
+
+.loading-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  gap: 1rem;
+  
+  p {
+    margin: 0;
+    color: var(--text-secondary);
+  }
+}
+
+// Status and League Chips
+.mat-mdc-chip {
+  font-size: 0.75rem;
+  height: 24px;
+  border-radius: 12px;
+  font-weight: 500;
+  
+  // Status chip styles
+  &.status-active {
+    background-color: #e8f5e8;
+    color: #2e7d2e;
+  }
+  
+  &.status-inactive {
+    background-color: #f5f5f5;
+    color: #666666;
+  }
+  
+  &.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+  
+  &.status-suspended {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  
+  &.status-archived {
+    background-color: #e2e3e5;
+    color: #41464b;
+  }
+  
+  // League chip styles
+  &.league-ekstraklasa {
+    background-color: #e3f2fd;
+    color: #1565c0;
+  }
+  
+  &.league-fortuna {
+    background-color: #fff3e0;
+    color: #e65100;
+  }
+  
+  &.league-european {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+  }
+  
+  &.league-regional {
+    background-color: #e8f5e8;
+    color: #388e3c;
+  }
+  
+  &.league-international {
+    background-color: #fce4ec;
+    color: #c2185b;
+  }
+}
+
+// Menu styles
+.mat-mdc-menu-panel {
+  .danger-action {
+    color: #d32f2f;
+    
+    .mat-icon {
+      color: #d32f2f;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 1200px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .club-details-container {
+    padding: 0.5rem;
+    
+    &.embedded {
+      padding: 0;
+    }
+  }
+  
+  .details-toolbar {
+    border-radius: 0;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    
+    .toolbar-title {
+      order: 1;
+      width: 100%;
+      margin-left: 0;
+      
+      h1 {
+        font-size: 1.25rem;
+      }
+      
+      .club-badges {
+        flex-wrap: wrap;
+      }
+    }
+    
+    .toolbar-actions {
+      order: 2;
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+  
+  .overview-card {
+    border-radius: 0;
+    
+    .club-header {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      
+      .club-info {
+        .club-meta {
+          align-items: center;
+        }
+      }
+    }
+  }
+  
+  .tabs-card {
+    border-radius: 0;
+    
+    .tab-content {
+      padding: 1rem;
+    }
+  }
+  
+  .location-info {
+    .club-map {
+      height: 250px;
+    }
+  }
+  
+  .connections-header,
+  .activity-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .club-header {
+    .logo-image,
+    .no-logo-placeholder {
+      width: 60px;
+      height: 60px;
+    }
+    
+    .no-logo-placeholder .mat-icon {
+      font-size: 30px;
+      width: 30px;
+      height: 30px;
+    }
+  }
+  
+  .info-section {
+    .info-grid .info-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+      
+      span {
+        text-align: left;
+      }
+    }
+    
+    .contact-grid .contact-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    
+    .colors-display {
+      justify-content: center;
+      
+      .color-swatch {
+        width: 40px;
+        height: 40px;
+      }
+    }
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .overview-card,
+  .tabs-card {
+    border: 2px solid var(--border-color);
+  }
+  
+  .color-swatch {
+    border-width: 3px;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .color-swatch {
+    transition: none;
+  }
+}
+
+// Dark theme support
+@media (prefers-color-scheme: dark) {
+  .club-details-container {
+    background-color: var(--dark-background);
+  }
+  
+  .overview-card,
+  .tabs-card {
+    background-color: var(--dark-surface);
+    color: var(--dark-text-primary);
+  }
+  
+  .loading-overlay {
+    background-color: rgba(33, 33, 33, 0.8);
+  }
+  
+  .coordinates {
+    background-color: var(--dark-background);
+  }
+}
+
+// Focus styles for accessibility
+.mat-mdc-button:focus,
+.mat-mdc-icon-button:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.color-swatch:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+// Print styles
+@media print {
+  .details-toolbar,
+  .toolbar-actions,
+  .mat-mdc-tab-header,
+  .connections-header button,
+  .activity-header button {
+    display: none;
+  }
+  
+  .overview-card,
+  .tabs-card {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+  
+  .tab-content {
+    page-break-inside: avoid;
+  }
+}

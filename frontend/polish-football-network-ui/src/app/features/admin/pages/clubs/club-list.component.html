@@ -1,0 +1,461 @@
+<div class="club-list-container">
+  <!-- Toolbar -->
+  <mat-toolbar class="club-toolbar" role="toolbar" aria-label="Club management toolbar">
+    <div class="toolbar-content">
+      <h1 class="page-title">Club Management</h1>
+      
+      <!-- Mobile responsive actions -->
+      <div class="toolbar-actions" [class.mobile-layout]="isMobile()">
+        <button 
+          mat-raised-button 
+          color="primary"
+          routerLink="/admin/clubs/new"
+          *hasPermission="'clubs:create'"
+          aria-label="Create new club">
+          <mat-icon>add</mat-icon>
+          <span [class.hide-mobile]="isMobile()">New Club</span>
+        </button>
+        
+        <!-- Export menu -->
+        <button 
+          mat-button
+          [matMenuTriggerFor]="exportMenu"
+          [disabled]="isLoading()"
+          aria-label="Export clubs menu">
+          <mat-icon>download</mat-icon>
+          <span [class.hide-mobile]="isMobile()">Export</span>
+        </button>
+        
+        <!-- Bulk actions (visible when items selected) -->
+        <div class="bulk-actions" *ngIf="hasSelection()">
+          <button 
+            mat-button
+            [matMenuTriggerFor]="bulkMenu"
+            [disabled]="isLoading()"
+            aria-label="Bulk actions menu">
+            <mat-icon>more_vert</mat-icon>
+            <span [class.hide-mobile]="isMobile()">Actions ({{ selection.selected.length }})</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </mat-toolbar>
+
+  <!-- Filters Card -->
+  <mat-card class="filters-card" [class.mobile-filters]="isMobile()">
+    <mat-card-content>
+      <div class="filters-container">
+        <!-- Search -->
+        <mat-form-field class="search-field" appearance="outline">
+          <mat-label>Search clubs</mat-label>
+          <input 
+            matInput 
+            [formControl]="searchControl"
+            placeholder="Search by name, short name, or city..."
+            aria-label="Search clubs">
+          <mat-icon matPrefix>search</mat-icon>
+          <button 
+            matSuffix 
+            mat-icon-button 
+            *ngIf="searchControl.value"
+            (click)="searchControl.setValue('')"
+            aria-label="Clear search">
+            <mat-icon>clear</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <!-- League filter -->
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>League</mat-label>
+          <mat-select 
+            [formControl]="leagueControl" 
+            multiple
+            aria-label="Filter by league">
+            <mat-option 
+              *ngFor="let league of leagueOptions" 
+              [value]="league.value">
+              {{ league.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Status filter -->
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Status</mat-label>
+          <mat-select 
+            [formControl]="statusControl" 
+            multiple
+            aria-label="Filter by status">
+            <mat-option 
+              *ngFor="let status of statusOptions" 
+              [value]="status.value">
+              {{ status.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Quick filters -->
+        <div class="quick-filters" [class.mobile-quick-filters]="isMobile()">
+          <mat-form-field appearance="outline" class="quick-filter">
+            <mat-label>Verified</mat-label>
+            <mat-select [formControl]="verifiedControl" aria-label="Filter by verification status">
+              <mat-option [value]="null">All</mat-option>
+              <mat-option [value]="true">Verified</mat-option>
+              <mat-option [value]="false">Not Verified</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="quick-filter">
+            <mat-label>Featured</mat-label>
+            <mat-select [formControl]="featuredControl" aria-label="Filter by featured status">
+              <mat-option [value]="null">All</mat-option>
+              <mat-option [value]="true">Featured</mat-option>
+              <mat-option [value]="false">Not Featured</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Clear filters button -->
+          <button 
+            mat-button
+            (click)="clearFilters()"
+            class="clear-filters-btn"
+            aria-label="Clear all filters">
+            <mat-icon>clear_all</mat-icon>
+            <span [class.hide-mobile]="isMobile()">Clear</span>
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Table Card -->
+  <mat-card class="table-card">
+    <!-- Loading overlay -->
+    <div class="loading-overlay" *ngIf="isLoading()">
+      <mat-spinner diameter="50" aria-label="Loading clubs"></mat-spinner>
+      <p>Loading clubs...</p>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container" [class.loading]="isLoading()">
+      <table 
+        mat-table 
+        [dataSource]="dataSource" 
+        matSort
+        (matSortChange)="onSortChange()"
+        class="clubs-table"
+        aria-label="Clubs table">
+        
+        <!-- Selection Column -->
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef class="select-column">
+            <mat-checkbox
+              [checked]="isAllSelected()"
+              [indeterminate]="hasSelection() && !isAllSelected()"
+              (change)="toggleAllSelection()"
+              aria-label="Select all clubs">
+            </mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let row" class="select-column">
+            <mat-checkbox
+              [checked]="selection.isSelected(row)"
+              (click)="$event.stopPropagation()"
+              (change)="toggleRowSelection(row)"
+              [aria-label]="'Select ' + row.name">
+            </mat-checkbox>
+          </td>
+        </ng-container>
+
+        <!-- Logo Column -->
+        <ng-container matColumnDef="logo">
+          <th mat-header-cell *matHeaderCellDef class="logo-column">Logo</th>
+          <td mat-cell *matCellDef="let club" class="logo-column">
+            <div class="club-logo">
+              <img 
+                *ngIf="club.logoUrl; else noLogo"
+                [src]="club.logoUrl" 
+                [alt]="club.name + ' logo'"
+                class="logo-image"
+                loading="lazy">
+              <ng-template #noLogo>
+                <div class="no-logo-placeholder" [attr.aria-label]="'No logo for ' + club.name">
+                  <mat-icon>sports_soccer</mat-icon>
+                </div>
+              </ng-template>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="name-column">
+            Name
+          </th>
+          <td mat-cell *matCellDef="let club" class="name-column">
+            <div class="club-name-cell">
+              <div class="primary-name">{{ club.name }}</div>
+              <div class="secondary-name" *ngIf="club.shortName && club.shortName !== club.name">
+                {{ club.shortName }}
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- League Column -->
+        <ng-container matColumnDef="league">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="league-column">
+            League
+          </th>
+          <td mat-cell *matCellDef="let club" class="league-column">
+            <mat-chip 
+              [class]="getLeagueClass(club.league)"
+              [attr.aria-label]="'League: ' + club.league">
+              {{ club.league }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- City Column -->
+        <ng-container matColumnDef="city">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="city-column">
+            City
+          </th>
+          <td mat-cell *matCellDef="let club" class="city-column">
+            <span [attr.aria-label]="'City: ' + club.city">{{ club.city }}</span>
+            <div class="country-code" *ngIf="club.country !== 'Poland'">
+              {{ club.country }}
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="status-column">
+            Status
+          </th>
+          <td mat-cell *matCellDef="let club" class="status-column">
+            <mat-chip 
+              [class]="getStatusClass(club.status)"
+              [attr.aria-label]="'Status: ' + club.status">
+              {{ club.status }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <!-- Verified Column -->
+        <ng-container matColumnDef="verified">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="verified-column">
+            Verified
+          </th>
+          <td mat-cell *matCellDef="let club" class="verified-column">
+            <mat-icon 
+              [class.verified]="club.isVerified"
+              [class.not-verified]="!club.isVerified"
+              [attr.aria-label]="club.isVerified ? 'Verified club' : 'Not verified'">
+              {{ club.isVerified ? 'verified' : 'help_outline' }}
+            </mat-icon>
+          </td>
+        </ng-container>
+
+        <!-- Featured Column -->
+        <ng-container matColumnDef="featured">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="featured-column">
+            Featured
+          </th>
+          <td mat-cell *matCellDef="let club" class="featured-column">
+            <mat-icon 
+              [class.featured]="club.isFeatured"
+              [class.not-featured]="!club.isFeatured"
+              [attr.aria-label]="club.isFeatured ? 'Featured club' : 'Not featured'">
+              {{ club.isFeatured ? 'star' : 'star_border' }}
+            </mat-icon>
+          </td>
+        </ng-container>
+
+        <!-- Connections Column -->
+        <ng-container matColumnDef="connections">
+          <th mat-header-cell *matHeaderCellDef class="connections-column">
+            Connections
+          </th>
+          <td mat-cell *matCellDef="let club" class="connections-column">
+            <span 
+              class="connection-count"
+              [attr.aria-label]="club.connectionCount + ' connections'">
+              {{ club.connectionCount }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Last Updated Column -->
+        <ng-container matColumnDef="lastUpdated">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="date-column">
+            Last Updated
+          </th>
+          <td mat-cell *matCellDef="let club" class="date-column">
+            <span [attr.aria-label]="'Last updated: ' + (club.lastUpdated | date:'medium')">
+              {{ club.lastUpdated | date:'short' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="actions-column">Actions</th>
+          <td mat-cell *matCellDef="let club" class="actions-column">
+            <div class="action-buttons">
+              <button 
+                mat-icon-button
+                (click)="viewClub(club); $event.stopPropagation()"
+                [attr.aria-label]="'View ' + club.name + ' details'"
+                matTooltip="View Details">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              
+              <button 
+                mat-icon-button
+                (click)="editClub(club); $event.stopPropagation()"
+                *hasPermission="'clubs:update'"
+                [attr.aria-label]="'Edit ' + club.name"
+                matTooltip="Edit Club">
+                <mat-icon>edit</mat-icon>
+              </button>
+              
+              <button 
+                mat-icon-button
+                [matMenuTriggerFor]="rowMenu"
+                [matMenuTriggerData]="{ club: club }"
+                (click)="$event.stopPropagation()"
+                [attr.aria-label]="'More actions for ' + club.name"
+                matTooltip="More Actions">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Table Header and Rows -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr 
+          mat-row 
+          *matRowDef="let row; columns: displayedColumns;"
+          class="club-row"
+          [class.selected]="selection.isSelected(row)"
+          (click)="viewClub(row)"
+          [attr.aria-label]="'Club row for ' + row.name">
+        </tr>
+      </table>
+
+      <!-- No data message -->
+      <div class="no-data" *ngIf="!isLoading() && dataSource.data.length === 0">
+        <mat-icon class="no-data-icon">sports_soccer</mat-icon>
+        <h3>No clubs found</h3>
+        <p>Try adjusting your search criteria or create a new club.</p>
+        <button 
+          mat-raised-button 
+          color="primary"
+          routerLink="/admin/clubs/new"
+          *hasPermission="'clubs:create'">
+          <mat-icon>add</mat-icon>
+          Create First Club
+        </button>
+      </div>
+    </div>
+
+    <!-- Paginator -->
+    <mat-paginator
+      #paginator
+      [length]="totalCount()"
+      [pageSize]="pageSize()"
+      [pageIndex]="pageIndex()"
+      [pageSizeOptions]="[10, 25, 50, 100]"
+      [showFirstLastButtons]="true"
+      (page)="onPageChange($event)"
+      aria-label="Club list pagination">
+    </mat-paginator>
+  </mat-card>
+</div>
+
+<!-- Export Menu -->
+<mat-menu #exportMenu="matMenu" aria-label="Export options">
+  <button mat-menu-item (click)="exportClubs('CSV')">
+    <mat-icon>table_chart</mat-icon>
+    <span>Export as CSV</span>
+  </button>
+  <button mat-menu-item (click)="exportClubs('EXCEL')">
+    <mat-icon>description</mat-icon>
+    <span>Export as Excel</span>
+  </button>
+  <button mat-menu-item (click)="exportClubs('JSON')">
+    <mat-icon>code</mat-icon>
+    <span>Export as JSON</span>
+  </button>
+</mat-menu>
+
+<!-- Bulk Actions Menu -->
+<mat-menu #bulkMenu="matMenu" aria-label="Bulk actions">
+  <button 
+    mat-menu-item 
+    (click)="performBulkOperation('activate')"
+    *hasPermission="'clubs:update'">
+    <mat-icon>check_circle</mat-icon>
+    <span>Activate Selected</span>
+  </button>
+  <button 
+    mat-menu-item 
+    (click)="performBulkOperation('deactivate')"
+    *hasPermission="'clubs:update'">
+    <mat-icon>pause_circle</mat-icon>
+    <span>Deactivate Selected</span>
+  </button>
+  <button 
+    mat-menu-item 
+    (click)="performBulkOperation('verify')"
+    *hasPermission="'clubs:verify'">
+    <mat-icon>verified</mat-icon>
+    <span>Verify Selected</span>
+  </button>
+  <button 
+    mat-menu-item 
+    (click)="performBulkOperation('feature')"
+    *hasPermission="'clubs:feature'">
+    <mat-icon>star</mat-icon>
+    <span>Feature Selected</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button 
+    mat-menu-item 
+    (click)="performBulkOperation('delete')"
+    *hasPermission="'clubs:delete'"
+    class="danger-action">
+    <mat-icon>delete</mat-icon>
+    <span>Delete Selected</span>
+  </button>
+</mat-menu>
+
+<!-- Row Actions Menu -->
+<mat-menu #rowMenu="matMenu" aria-label="Row actions">
+  <ng-template matMenuContent let-club="club">
+    <button 
+      mat-menu-item 
+      (click)="viewClub(club)">
+      <mat-icon>visibility</mat-icon>
+      <span>View Details</span>
+    </button>
+    <button 
+      mat-menu-item 
+      (click)="editClub(club)"
+      *hasPermission="'clubs:update'">
+      <mat-icon>edit</mat-icon>
+      <span>Edit Club</span>
+    </button>
+    <mat-divider></mat-divider>
+    <button 
+      mat-menu-item 
+      (click)="deleteClub(club)"
+      *hasPermission="'clubs:delete'"
+      class="danger-action">
+      <mat-icon>delete</mat-icon>
+      <span>Delete Club</span>
+    </button>
+  </ng-template>
+</mat-menu>

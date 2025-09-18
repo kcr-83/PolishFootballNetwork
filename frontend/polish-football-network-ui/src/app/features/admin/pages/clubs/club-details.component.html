@@ -1,0 +1,379 @@
+<div class="club-details-container" [class.embedded]="embedded">
+  <!-- Loading overlay -->
+  <div class="loading-overlay" *ngIf="isLoading()">
+    <mat-spinner diameter="50" aria-label="Loading club details"></mat-spinner>
+    <p>Loading club details...</p>
+  </div>
+
+  <!-- Header toolbar -->
+  <mat-toolbar class="details-toolbar" *ngIf="!embedded">
+    <button 
+      mat-icon-button
+      (click)="goBack()"
+      aria-label="Go back to clubs list">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    
+    <div class="toolbar-title">
+      <h1>{{ clubName() }}</h1>
+      <div class="club-badges" *ngIf="clubExists()">
+        <mat-chip 
+          [class]="getLeagueClass(club()!.league)"
+          [attr.aria-label]="'League: ' + club()!.league">
+          {{ club()!.league }}
+        </mat-chip>
+        <mat-chip 
+          [class]="getStatusClass(club()!.status)"
+          [attr.aria-label]="'Status: ' + club()!.status">
+          {{ club()!.status }}
+        </mat-chip>
+        <mat-icon 
+          class="verified-badge"
+          *ngIf="isVerified()"
+          matTooltip="Verified Club"
+          aria-label="Verified club">
+          verified
+        </mat-icon>
+        <mat-icon 
+          class="featured-badge"
+          *ngIf="isFeatured()"
+          matTooltip="Featured Club"
+          aria-label="Featured club">
+          star
+        </mat-icon>
+      </div>
+    </div>
+
+    <div class="toolbar-actions">
+      <button 
+        mat-button
+        (click)="refreshData()"
+        [disabled]="isLoading()"
+        aria-label="Refresh club data">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+      
+      <button 
+        mat-raised-button
+        color="primary"
+        (click)="startEdit()"
+        *hasPermission="'clubs:update'"
+        [disabled]="!canEdit()"
+        aria-label="Edit club">
+        <mat-icon>edit</mat-icon>
+        Edit Club
+      </button>
+      
+      <button 
+        mat-button
+        [matMenuTriggerFor]="actionsMenu"
+        [disabled]="isLoading()"
+        aria-label="More actions">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+    </div>
+  </mat-toolbar>
+
+  <!-- Edit mode -->
+  <div class="edit-container" *ngIf="isEditing() && club()">
+    <app-club-form
+      [club]="club()!"
+      mode="edit"
+      (clubSaved)="onClubSaved($event)"
+      (cancelled)="cancelEdit()">
+    </app-club-form>
+  </div>
+
+  <!-- Details view -->
+  <div class="details-content" *ngIf="!isEditing() && clubExists()">
+    <!-- Club overview card -->
+    <mat-card class="overview-card">
+      <mat-card-header>
+        <div class="club-header">
+          <div class="club-logo" *ngIf="clubLogo(); else noLogo">
+            <img 
+              [src]="clubLogo()!" 
+              [alt]="clubName() + ' logo'"
+              class="logo-image">
+          </div>
+          <ng-template #noLogo>
+            <div class="no-logo-placeholder">
+              <mat-icon>sports_soccer</mat-icon>
+            </div>
+          </ng-template>
+          
+          <div class="club-info">
+            <mat-card-title>{{ club()!.name }}</mat-card-title>
+            <mat-card-subtitle *ngIf="club()!.shortName !== club()!.name">
+              {{ club()!.shortName }}
+            </mat-card-subtitle>
+            <div class="club-meta">
+              <span class="location">
+                <mat-icon>location_on</mat-icon>
+                {{ club()!.city }}, {{ club()!.country }}
+              </span>
+              <span class="founded" *ngIf="club()!.founded">
+                <mat-icon>calendar_today</mat-icon>
+                Founded {{ club()!.founded }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="overview-grid">
+          <!-- Basic information -->
+          <div class="info-section">
+            <h3>Basic Information</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <strong>League:</strong>
+                <span>{{ club()!.league }}</span>
+              </div>
+              <div class="info-item">
+                <strong>Status:</strong>
+                <span>{{ club()!.status }}</span>
+              </div>
+              <div class="info-item" *ngIf="club()!.stadium">
+                <strong>Stadium:</strong>
+                <span>{{ club()!.stadium }}</span>
+              </div>
+              <div class="info-item">
+                <strong>URL Slug:</strong>
+                <span class="monospace">{{ club()!.slug }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact information -->
+          <div class="info-section" *ngIf="club()!.website || club()!.email || club()!.phone">
+            <h3>Contact Information</h3>
+            <div class="contact-grid">
+              <div class="contact-item" *ngIf="club()!.website">
+                <mat-icon>language</mat-icon>
+                <a [href]="club()!.website" target="_blank" rel="noopener">
+                  {{ club()!.website }}
+                </a>
+              </div>
+              <div class="contact-item" *ngIf="club()!.email">
+                <mat-icon>email</mat-icon>
+                <a [href]="'mailto:' + club()!.email">
+                  {{ club()!.email }}
+                </a>
+              </div>
+              <div class="contact-item" *ngIf="club()!.phone">
+                <mat-icon>phone</mat-icon>
+                <a [href]="'tel:' + club()!.phone">
+                  {{ formatPhone(club()!.phone) }}
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Club colors -->
+          <div class="info-section" *ngIf="club()!.colors">
+            <h3>Club Colors</h3>
+            <div class="colors-display">
+              <div 
+                class="color-swatch"
+                [style.background-color]="club()!.colors.primary"
+                [attr.aria-label]="'Primary color: ' + club()!.colors.primary"
+                matTooltip="Primary Color">
+              </div>
+              <div 
+                class="color-swatch"
+                [style.background-color]="club()!.colors.secondary"
+                [attr.aria-label]="'Secondary color: ' + club()!.colors.secondary"
+                matTooltip="Secondary Color">
+              </div>
+              <div 
+                class="color-swatch"
+                [style.background-color]="club()!.colors.accent"
+                [attr.aria-label]="'Accent color: ' + club()!.colors.accent"
+                matTooltip="Accent Color">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="description-section" *ngIf="club()!.description">
+          <h3>Description</h3>
+          <p class="club-description">{{ club()!.description }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Tabbed content -->
+    <mat-card class="tabs-card">
+      <mat-tab-group 
+        [selectedIndex]="activeTab()"
+        (selectedTabChange)="onTabChange($event.index)"
+        mat-stretch-tabs>
+        
+        <!-- Location tab -->
+        <mat-tab label="Location">
+          <div class="tab-content">
+            <div class="location-info" *ngIf="clubPosition(); else noPosition">
+              <app-map-view
+                [position]="clubPosition()!"
+                [markers]="[{position: clubPosition()!, title: clubName()}]"
+                [zoom]="15"
+                class="club-map">
+              </app-map-view>
+              
+              <div class="coordinates">
+                <h4>Coordinates</h4>
+                <p>
+                  <strong>Latitude:</strong> {{ clubPosition()!.latitude }}<br>
+                  <strong>Longitude:</strong> {{ clubPosition()!.longitude }}
+                </p>
+              </div>
+            </div>
+            
+            <ng-template #noPosition>
+              <div class="no-position">
+                <mat-icon>location_off</mat-icon>
+                <h3>No location data</h3>
+                <p>The club's location has not been set yet.</p>
+                <button 
+                  mat-raised-button
+                  color="primary"
+                  (click)="startEdit()"
+                  *hasPermission="'clubs:update'">
+                  <mat-icon>edit_location</mat-icon>
+                  Set Location
+                </button>
+              </div>
+            </ng-template>
+          </div>
+        </mat-tab>
+
+        <!-- Connections tab -->
+        <mat-tab label="Connections" [disabled]="isLoading()">
+          <div class="tab-content">
+            <div class="connections-header">
+              <h3>Club Connections</h3>
+              <button 
+                mat-raised-button
+                color="primary"
+                *hasPermission="'connections:create'"
+                [disabled]="isLoading()">
+                <mat-icon>add</mat-icon>
+                Add Connection
+              </button>
+            </div>
+            
+            <app-connection-table
+              *ngIf="hasConnections(); else noConnections"
+              [connections]="connections()"
+              [clubId]="club()!.id">
+            </app-connection-table>
+            
+            <ng-template #noConnections>
+              <div class="no-connections">
+                <mat-icon>link_off</mat-icon>
+                <h4>No connections found</h4>
+                <p>This club has no connections to other clubs yet.</p>
+              </div>
+            </ng-template>
+          </div>
+        </mat-tab>
+
+        <!-- Activity tab -->
+        <mat-tab label="Activity" [disabled]="isLoading()">
+          <div class="tab-content">
+            <div class="activity-header">
+              <h3>Activity History</h3>
+              <button 
+                mat-button
+                (click)="loadActivityLogs()"
+                [disabled]="isLoading()">
+                <mat-icon>refresh</mat-icon>
+                Refresh
+              </button>
+            </div>
+            
+            <app-activity-timeline
+              *ngIf="hasActivityLogs(); else noActivity"
+              [activities]="activityLogs()">
+            </app-activity-timeline>
+            
+            <ng-template #noActivity>
+              <div class="no-activity">
+                <mat-icon>history</mat-icon>
+                <h4>No activity found</h4>
+                <p>No recent activity recorded for this club.</p>
+              </div>
+            </ng-template>
+          </div>
+        </mat-tab>
+
+        <!-- Statistics tab -->
+        <mat-tab label="Statistics" [disabled]="isLoading()">
+          <div class="tab-content">
+            <app-club-stats
+              *ngIf="statistics(); else loadingStats"
+              [statistics]="statistics()!"
+              [clubId]="club()!.id">
+            </app-club-stats>
+            
+            <ng-template #loadingStats>
+              <div class="loading-stats">
+                <mat-spinner diameter="40"></mat-spinner>
+                <p>Loading statistics...</p>
+              </div>
+            </ng-template>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card>
+  </div>
+
+  <!-- No club found -->
+  <div class="no-club" *ngIf="!clubExists() && !isLoading()">
+    <mat-icon class="no-club-icon">sports_soccer</mat-icon>
+    <h2>Club not found</h2>
+    <p>The requested club could not be found or you don't have permission to view it.</p>
+    <button 
+      mat-raised-button
+      color="primary"
+      (click)="goBack()"
+      *ngIf="!embedded">
+      <mat-icon>arrow_back</mat-icon>
+      Back to Clubs
+    </button>
+  </div>
+</div>
+
+<!-- Actions menu -->
+<mat-menu #actionsMenu="matMenu" aria-label="Club actions">
+  <button 
+    mat-menu-item
+    (click)="toggleVerification()"
+    *hasPermission="'clubs:verify'">
+    <mat-icon>{{ isVerified() ? 'verified' : 'help_outline' }}</mat-icon>
+    <span>{{ isVerified() ? 'Remove Verification' : 'Verify Club' }}</span>
+  </button>
+  
+  <button 
+    mat-menu-item
+    (click)="toggleFeatured()"
+    *hasPermission="'clubs:feature'">
+    <mat-icon>{{ isFeatured() ? 'star' : 'star_border' }}</mat-icon>
+    <span>{{ isFeatured() ? 'Remove Featured' : 'Make Featured' }}</span>
+  </button>
+  
+  <mat-divider></mat-divider>
+  
+  <button 
+    mat-menu-item
+    (click)="deleteClub()"
+    *hasPermission="'clubs:delete'"
+    class="danger-action">
+    <mat-icon>delete</mat-icon>
+    <span>Delete Club</span>
+  </button>
+</mat-menu>

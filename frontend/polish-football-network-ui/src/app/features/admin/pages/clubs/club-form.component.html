@@ -1,0 +1,563 @@
+<div class="club-form-container" [class.loading]="isLoading()">
+  <!-- Loading overlay -->
+  <div class="loading-overlay" *ngIf="isLoading()">
+    <mat-spinner diameter="50" aria-label="Loading club data"></mat-spinner>
+    <p>Loading club data...</p>
+  </div>
+
+  <!-- Form header -->
+  <div class="form-header">
+    <h1 class="form-title">
+      {{ isEditMode() ? 'Edit Club' : 'Create New Club' }}
+    </h1>
+    <div class="form-actions">
+      <button 
+        mat-button
+        type="button"
+        (click)="onCancel()"
+        [disabled]="isSaving()">
+        Cancel
+      </button>
+      <button 
+        mat-button
+        type="button"
+        (click)="onReset()"
+        [disabled]="isSaving() || !hasUnsavedChanges()"
+        *ngIf="isEditMode()">
+        Reset
+      </button>
+      <button 
+        mat-raised-button
+        color="primary"
+        type="submit"
+        form="clubForm"
+        [disabled]="!isFormValid()"
+        [class.loading]="isSaving()">
+        <mat-spinner diameter="20" *ngIf="isSaving()"></mat-spinner>
+        <span *ngIf="!isSaving()">
+          {{ isEditMode() ? 'Update Club' : 'Create Club' }}
+        </span>
+        <span *ngIf="isSaving()">
+          {{ isEditMode() ? 'Updating...' : 'Creating...' }}
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Stepper Form -->
+  <form 
+    id="clubForm"
+    [formGroup]="clubForm"
+    (ngSubmit)="onSubmit()"
+    class="club-form">
+    
+    <mat-stepper orientation="horizontal" linear="false" #stepper>
+      <!-- Step 1: Basic Information -->
+      <mat-step [stepControl]="clubForm" label="Basic Information" [hasError]="false">
+        <mat-card class="step-card">
+          <mat-card-header>
+            <mat-card-title>Basic Club Information</mat-card-title>
+            <mat-card-subtitle>Enter the fundamental details about the club</mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <div class="form-row">
+              <!-- Club Name -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Club Name</mat-label>
+                <input 
+                  matInput
+                  formControlName="name"
+                  placeholder="Enter full club name"
+                  maxlength="100"
+                  required
+                  [attr.aria-describedby]="hasFieldError('name') ? 'name-error' : null">
+                <mat-hint>Full official name of the club</mat-hint>
+                <mat-error 
+                  id="name-error"
+                  *ngIf="hasFieldError('name')">
+                  {{ getFieldError('name') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <!-- Short Name -->
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Short Name</mat-label>
+                <input 
+                  matInput
+                  formControlName="shortName"
+                  placeholder="Enter short name"
+                  maxlength="20"
+                  required
+                  [attr.aria-describedby]="hasFieldError('shortName') ? 'shortName-error' : null">
+                <mat-hint>Abbreviated name (max 20 chars)</mat-hint>
+                <mat-error 
+                  id="shortName-error"
+                  *ngIf="hasFieldError('shortName')">
+                  {{ getFieldError('shortName') }}
+                </mat-error>
+              </mat-form-field>
+
+              <!-- URL Slug -->
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>URL Slug</mat-label>
+                <input 
+                  matInput
+                  formControlName="slug"
+                  placeholder="club-url-slug"
+                  required
+                  [attr.aria-describedby]="hasFieldError('slug') ? 'slug-error' : null">
+                <mat-hint>URL-friendly identifier (auto-generated)</mat-hint>
+                <mat-error 
+                  id="slug-error"
+                  *ngIf="hasFieldError('slug')">
+                  {{ getFieldError('slug') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <!-- League -->
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>League</mat-label>
+                <mat-select 
+                  formControlName="league"
+                  required
+                  [attr.aria-describedby]="hasFieldError('league') ? 'league-error' : null">
+                  <mat-option 
+                    *ngFor="let league of leagueOptions" 
+                    [value]="league.value">
+                    {{ league.label }}
+                  </mat-option>
+                </mat-select>
+                <mat-hint>Competition level</mat-hint>
+                <mat-error 
+                  id="league-error"
+                  *ngIf="hasFieldError('league')">
+                  {{ getFieldError('league') }}
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Status -->
+              <mat-form-field appearance="outline" class="half-width" *ngIf="isEditMode()">
+                <mat-label>Status</mat-label>
+                <mat-select 
+                  formControlName="status"
+                  required
+                  [attr.aria-describedby]="hasFieldError('status') ? 'status-error' : null">
+                  <mat-option 
+                    *ngFor="let status of statusOptions" 
+                    [value]="status.value">
+                    {{ status.label }}
+                  </mat-option>
+                </mat-select>
+                <mat-hint>Club operational status</mat-hint>
+                <mat-error 
+                  id="status-error"
+                  *ngIf="hasFieldError('status')">
+                  {{ getFieldError('status') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <!-- Description -->
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Description</mat-label>
+                <textarea 
+                  matInput
+                  formControlName="description"
+                  rows="4"
+                  placeholder="Enter club description..."
+                  maxlength="1000"
+                  [attr.aria-describedby]="hasFieldError('description') ? 'description-error' : null">
+                </textarea>
+                <mat-hint>Brief description of the club (optional)</mat-hint>
+                <mat-error 
+                  id="description-error"
+                  *ngIf="hasFieldError('description')">
+                  {{ getFieldError('description') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </mat-card-content>
+          
+          <mat-card-actions>
+            <button mat-button matStepperNext type="button">Next</button>
+          </mat-card-actions>
+        </mat-card>
+      </mat-step>
+
+      <!-- Step 2: Location & Details -->
+      <mat-step label="Location & Details">
+        <mat-card class="step-card">
+          <mat-card-header>
+            <mat-card-title>Location & Club Details</mat-card-title>
+            <mat-card-subtitle>Specify where the club is located and additional details</mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <div class="form-row">
+              <!-- Country -->
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Country</mat-label>
+                <mat-select 
+                  formControlName="country"
+                  required
+                  [attr.aria-describedby]="hasFieldError('country') ? 'country-error' : null">
+                  <mat-option 
+                    *ngFor="let country of countryOptions" 
+                    [value]="country.value">
+                    {{ country.label }}
+                  </mat-option>
+                </mat-select>
+                <mat-hint>Country where club is based</mat-hint>
+                <mat-error 
+                  id="country-error"
+                  *ngIf="hasFieldError('country')">
+                  {{ getFieldError('country') }}
+                </mat-error>
+              </mat-form-field>
+
+              <!-- City -->
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>City</mat-label>
+                <input 
+                  matInput
+                  formControlName="city"
+                  [matAutocomplete]="cityAuto"
+                  placeholder="Enter city name"
+                  required
+                  [attr.aria-describedby]="hasFieldError('city') ? 'city-error' : null">
+                <mat-autocomplete #cityAuto="matAutocomplete">
+                  <mat-option 
+                    *ngFor="let city of cityOptions()" 
+                    [value]="city">
+                    {{ city }}
+                  </mat-option>
+                </mat-autocomplete>
+                <mat-hint>City where club is located</mat-hint>
+                <mat-error 
+                  id="city-error"
+                  *ngIf="hasFieldError('city')">
+                  {{ getFieldError('city') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <!-- Founded Year -->
+              <mat-form-field appearance="outline" class="third-width">
+                <mat-label>Founded</mat-label>
+                <input 
+                  matInput
+                  formControlName="founded"
+                  type="number"
+                  placeholder="Year"
+                  [min]="1800"
+                  [max]="2024"
+                  [attr.aria-describedby]="hasFieldError('founded') ? 'founded-error' : null">
+                <mat-hint>Year club was established</mat-hint>
+                <mat-error 
+                  id="founded-error"
+                  *ngIf="hasFieldError('founded')">
+                  {{ getFieldError('founded') }}
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Stadium -->
+              <mat-form-field appearance="outline" class="two-thirds-width">
+                <mat-label>Stadium</mat-label>
+                <input 
+                  matInput
+                  formControlName="stadium"
+                  placeholder="Stadium name"
+                  maxlength="200"
+                  [attr.aria-describedby]="hasFieldError('stadium') ? 'stadium-error' : null">
+                <mat-hint>Home stadium name (optional)</mat-hint>
+                <mat-error 
+                  id="stadium-error"
+                  *ngIf="hasFieldError('stadium')">
+                  {{ getFieldError('stadium') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <!-- Position Picker -->
+            <div class="form-section">
+              <h3>Stadium Location</h3>
+              <p class="section-hint">Click on the map to set the stadium location (optional)</p>
+              <app-position-picker
+                [initialPosition]="selectedPosition()"
+                (positionSelected)="onPositionSelected($event)">
+              </app-position-picker>
+            </div>
+          </mat-card-content>
+          
+          <mat-card-actions>
+            <button mat-button matStepperPrevious type="button">Previous</button>
+            <button mat-button matStepperNext type="button">Next</button>
+          </mat-card-actions>
+        </mat-card>
+      </mat-step>
+
+      <!-- Step 3: Contact & Media -->
+      <mat-step label="Contact & Media">
+        <mat-card class="step-card">
+          <mat-card-header>
+            <mat-card-title>Contact Information & Media</mat-card-title>
+            <mat-card-subtitle>Add contact details and club media assets</mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <div class="form-row">
+              <!-- Website -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Website</mat-label>
+                <input 
+                  matInput
+                  formControlName="website"
+                  type="url"
+                  placeholder="https://www.club-website.com"
+                  [attr.aria-describedby]="hasFieldError('website') ? 'website-error' : null">
+                <mat-icon matPrefix>language</mat-icon>
+                <mat-hint>Official club website</mat-hint>
+                <mat-error 
+                  id="website-error"
+                  *ngIf="hasFieldError('website')">
+                  {{ getFieldError('website') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <!-- Email -->
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Email</mat-label>
+                <input 
+                  matInput
+                  formControlName="email"
+                  type="email"
+                  placeholder="contact@club.com"
+                  [attr.aria-describedby]="hasFieldError('email') ? 'email-error' : null">
+                <mat-icon matPrefix>email</mat-icon>
+                <mat-hint>Contact email address</mat-hint>
+                <mat-error 
+                  id="email-error"
+                  *ngIf="hasFieldError('email')">
+                  {{ getFieldError('email') }}
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Phone -->
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Phone</mat-label>
+                <input 
+                  matInput
+                  formControlName="phone"
+                  type="tel"
+                  placeholder="+48 123 456 789"
+                  [attr.aria-describedby]="hasFieldError('phone') ? 'phone-error' : null">
+                <mat-icon matPrefix>phone</mat-icon>
+                <mat-hint>Contact phone number</mat-hint>
+                <mat-error 
+                  id="phone-error"
+                  *ngIf="hasFieldError('phone')">
+                  {{ getFieldError('phone') }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <!-- Logo Upload -->
+            <div class="form-section">
+              <h3>Club Logo</h3>
+              <p class="section-hint">Upload the official club logo (recommended: SVG, PNG, max 2MB)</p>
+              <app-logo-upload
+                [initialLogoUrl]="logoUrl()"
+                (logoUploaded)="onLogoUploaded($event)"
+                (logoRemoved)="onLogoRemoved()">
+              </app-logo-upload>
+            </div>
+
+            <!-- Club Colors -->
+            <div class="form-section" formGroupName="colors">
+              <h3>Club Colors</h3>
+              <p class="section-hint">Select the official club colors</p>
+              <div class="color-picker-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Primary Color</mat-label>
+                  <input 
+                    matInput
+                    formControlName="primary"
+                    type="color"
+                    class="color-input">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Secondary Color</mat-label>
+                  <input 
+                    matInput
+                    formControlName="secondary"
+                    type="color"
+                    class="color-input">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Accent Color</mat-label>
+                  <input 
+                    matInput
+                    formControlName="accent"
+                    type="color"
+                    class="color-input">
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-card-content>
+          
+          <mat-card-actions>
+            <button mat-button matStepperPrevious type="button">Previous</button>
+            <button mat-button matStepperNext type="button">Next</button>
+          </mat-card-actions>
+        </mat-card>
+      </mat-step>
+
+      <!-- Step 4: Settings & Review -->
+      <mat-step label="Settings & Review">
+        <mat-card class="step-card">
+          <mat-card-header>
+            <mat-card-title>Settings & Final Review</mat-card-title>
+            <mat-card-subtitle>Configure club settings and review all information</mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <!-- Settings -->
+            <div class="form-section" *ngIf="isEditMode()">
+              <h3>Club Settings</h3>
+              <div class="settings-row">
+                <mat-slide-toggle 
+                  formControlName="isVerified"
+                  color="primary">
+                  Verified Club
+                  <mat-hint>Mark as officially verified</mat-hint>
+                </mat-slide-toggle>
+
+                <mat-slide-toggle 
+                  formControlName="isFeatured"
+                  color="accent">
+                  Featured Club
+                  <mat-hint>Display prominently in listings</mat-hint>
+                </mat-slide-toggle>
+
+                <mat-slide-toggle 
+                  formControlName="isPublic"
+                  color="primary">
+                  Public Profile
+                  <mat-hint>Visible to all users</mat-hint>
+                </mat-slide-toggle>
+              </div>
+            </div>
+
+            <!-- Review Summary -->
+            <div class="form-section">
+              <h3>Review Information</h3>
+              <div class="review-grid">
+                <div class="review-item">
+                  <strong>Club Name:</strong>
+                  <span>{{ nameControl.value || 'Not specified' }}</span>
+                </div>
+                <div class="review-item">
+                  <strong>Short Name:</strong>
+                  <span>{{ shortNameControl.value || 'Not specified' }}</span>
+                </div>
+                <div class="review-item">
+                  <strong>League:</strong>
+                  <span>{{ leagueControl.value || 'Not specified' }}</span>
+                </div>
+                <div class="review-item">
+                  <strong>Location:</strong>
+                  <span>{{ cityControl.value }}, {{ countryControl.value }}</span>
+                </div>
+                <div class="review-item" *ngIf="foundedControl.value">
+                  <strong>Founded:</strong>
+                  <span>{{ foundedControl.value }}</span>
+                </div>
+                <div class="review-item" *ngIf="stadiumControl.value">
+                  <strong>Stadium:</strong>
+                  <span>{{ stadiumControl.value }}</span>
+                </div>
+                <div class="review-item" *ngIf="websiteControl.value">
+                  <strong>Website:</strong>
+                  <span>{{ websiteControl.value }}</span>
+                </div>
+                <div class="review-item" *ngIf="emailControl.value">
+                  <strong>Email:</strong>
+                  <span>{{ emailControl.value }}</span>
+                </div>
+              </div>
+
+              <!-- Logo Preview -->
+              <div class="logo-preview" *ngIf="logoUrl()">
+                <strong>Logo:</strong>
+                <img 
+                  [src]="logoUrl()!" 
+                  [alt]="nameControl.value + ' logo'"
+                  class="preview-logo">
+              </div>
+
+              <!-- Colors Preview -->
+              <div class="colors-preview">
+                <strong>Colors:</strong>
+                <div class="color-swatches">
+                  <div 
+                    class="color-swatch"
+                    [style.background-color]="clubForm.get('colors.primary')?.value"
+                    [attr.aria-label]="'Primary color: ' + clubForm.get('colors.primary')?.value">
+                  </div>
+                  <div 
+                    class="color-swatch"
+                    [style.background-color]="clubForm.get('colors.secondary')?.value"
+                    [attr.aria-label]="'Secondary color: ' + clubForm.get('colors.secondary')?.value">
+                  </div>
+                  <div 
+                    class="color-swatch"
+                    [style.background-color]="clubForm.get('colors.accent')?.value"
+                    [attr.aria-label]="'Accent color: ' + clubForm.get('colors.accent')?.value">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Validation Summary -->
+            <div class="validation-summary" *ngIf="clubForm.invalid">
+              <h4>Please fix the following issues:</h4>
+              <ul class="error-list">
+                <li *ngIf="hasFieldError('name')">{{ getFieldError('name') }}</li>
+                <li *ngIf="hasFieldError('shortName')">{{ getFieldError('shortName') }}</li>
+                <li *ngIf="hasFieldError('slug')">{{ getFieldError('slug') }}</li>
+                <li *ngIf="hasFieldError('league')">{{ getFieldError('league') }}</li>
+                <li *ngIf="hasFieldError('country')">{{ getFieldError('country') }}</li>
+                <li *ngIf="hasFieldError('city')">{{ getFieldError('city') }}</li>
+                <li *ngIf="hasFieldError('website')">{{ getFieldError('website') }}</li>
+                <li *ngIf="hasFieldError('email')">{{ getFieldError('email') }}</li>
+                <li *ngIf="hasFieldError('phone')">{{ getFieldError('phone') }}</li>
+              </ul>
+            </div>
+          </mat-card-content>
+          
+          <mat-card-actions>
+            <button mat-button matStepperPrevious type="button">Previous</button>
+            <button 
+              mat-raised-button
+              color="primary"
+              type="submit"
+              [disabled]="!isFormValid()">
+              {{ isEditMode() ? 'Update Club' : 'Create Club' }}
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </mat-step>
+    </mat-stepper>
+  </form>
+</div>

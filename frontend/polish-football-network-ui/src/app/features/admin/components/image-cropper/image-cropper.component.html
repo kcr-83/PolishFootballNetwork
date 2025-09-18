@@ -1,0 +1,146 @@
+<div class="image-cropper-dialog">
+  <!-- Toolbar -->
+  <mat-toolbar class="cropper-toolbar">
+    <span class="toolbar-title">
+      <mat-icon>crop</mat-icon>
+      Crop Image
+    </span>
+    
+    <span class="toolbar-spacer"></span>
+    
+    <button 
+      mat-icon-button
+      (click)="cancel()"
+      aria-label="Close cropper"
+      class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading()">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Loading image...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="cropper-content" *ngIf="!isLoading()">
+    <!-- Controls Panel -->
+    <div class="controls-panel">
+      <!-- Aspect Ratio Selection -->
+      <div class="control-group">
+        <mat-form-field appearance="outline" class="aspect-ratio-field">
+          <mat-label>Aspect Ratio</mat-label>
+          <mat-select 
+            [value]="selectedAspectRatio()"
+            (selectionChange)="onAspectRatioChange($event.value)"
+            aria-label="Select aspect ratio">
+            <mat-option 
+              *ngFor="let option of aspectRatioOptions" 
+              [value]="option.value">
+              {{ option.label }}
+              <span class="option-description">{{ option.description }}</span>
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Zoom Control -->
+      <div class="control-group">
+        <label class="zoom-label">
+          <mat-icon>zoom_in</mat-icon>
+          Zoom: {{ zoomLevel() }}%
+        </label>
+        <mat-slider 
+          class="zoom-slider"
+          [min]="50"
+          [max]="200"
+          [step]="5"
+          [value]="zoomLevel()"
+          (input)="onZoomChange($event.value)"
+          aria-label="Zoom level">
+        </mat-slider>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="control-group quick-actions">
+        <button 
+          mat-button
+          (click)="resetCrop()"
+          [disabled]="isProcessing()"
+          aria-label="Reset crop area">
+          <mat-icon>refresh</mat-icon>
+          Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- Canvas Container -->
+    <div class="canvas-container" #container>
+      <canvas 
+        #canvas
+        class="crop-canvas"
+        [class.processing]="isProcessing()"
+        *ngIf="imageLoaded()">
+      </canvas>
+      
+      <!-- Canvas Loading -->
+      <div class="canvas-loading" *ngIf="!imageLoaded()">
+        <mat-icon>image</mat-icon>
+        <p>Preparing image...</p>
+      </div>
+    </div>
+
+    <!-- Crop Information -->
+    <div class="crop-info" *ngIf="imageLoaded()">
+      <div class="info-item">
+        <mat-icon>crop_free</mat-icon>
+        <span>
+          Crop: {{ cropArea().width | number:'1.0-0' }} × {{ cropArea().height | number:'1.0-0' }}
+        </span>
+      </div>
+      <div class="info-item" *ngIf="selectedAspectRatio()">
+        <mat-icon>aspect_ratio</mat-icon>
+        <span>
+          Ratio: {{ selectedAspectRatio() | number:'1.2-2' }}:1
+        </span>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button 
+        mat-button
+        (click)="cancel()"
+        [disabled]="isProcessing()"
+        class="cancel-button">
+        Cancel
+      </button>
+
+      <button 
+        mat-raised-button
+        color="primary"
+        (click)="cropImage()"
+        [disabled]="!canCrop()"
+        [class.loading]="isProcessing()"
+        class="crop-button">
+        <mat-spinner diameter="20" *ngIf="isProcessing()"></mat-spinner>
+        <mat-icon *ngIf="!isProcessing()">check</mat-icon>
+        <span>{{ isProcessing() ? 'Processing...' : 'Apply Crop' }}</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Instructions Overlay -->
+<div class="instructions-overlay" *ngIf="imageLoaded() && !isProcessing()">
+  <div class="instructions-content">
+    <h4><mat-icon>info</mat-icon> How to crop:</h4>
+    <ul>
+      <li>Drag the crop area to move it</li>
+      <li>Drag corner handles to resize</li>
+      <li>Use zoom to get precise positioning</li>
+      <li>Select aspect ratio for consistent results</li>
+    </ul>
+  </div>
+</div>

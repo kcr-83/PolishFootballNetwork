@@ -1,0 +1,224 @@
+<div class="logo-upload-container">
+  <!-- Current Logo Display -->
+  <div class="current-logo-section" *ngIf="hasLogo()">
+    <h3>Current Logo</h3>
+    <div class="logo-display">
+      <img 
+        [src]="currentLogoUrl()!" 
+        alt="Current club logo"
+        class="current-logo-image">
+      <div class="logo-actions">
+        <button 
+          mat-button
+          color="warn"
+          (click)="removeLogo()"
+          aria-label="Remove current logo">
+          <mat-icon>delete</mat-icon>
+          Remove
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- File Input (Hidden) -->
+  <input 
+    #fileInput
+    type="file"
+    [accept]="acceptedTypes.join(',')"
+    [multiple]="allowMultiple"
+    (change)="onFileSelected($event)"
+    class="file-input-hidden"
+    aria-label="Select logo file">
+
+  <!-- Upload Section -->
+  <div class="upload-section">
+    <h3>{{ hasLogo() ? 'Update Logo' : 'Upload Logo' }}</h3>
+    
+    <!-- Drop Zone -->
+    <div 
+      #dropZone
+      class="drop-zone"
+      [class.drag-over]="isDragOver()"
+      [class.has-file]="hasSelectedFile()"
+      (click)="openFilePicker()"
+      role="button"
+      tabindex="0"
+      [attr.aria-label]="'Drop logo file here or click to select'"
+      (keydown.enter)="openFilePicker()"
+      (keydown.space)="openFilePicker()">
+      
+      <!-- Default Drop State -->
+      <div class="drop-zone-content" *ngIf="!hasSelectedFile() && !isDragOver()">
+        <mat-icon class="upload-icon">cloud_upload</mat-icon>
+        <h4>Drop logo file here</h4>
+        <p>or click to browse files</p>
+        <div class="file-requirements">
+          <small>Accepted formats: {{ acceptedTypes.join(', ') }}</small>
+          <small>Maximum size: {{ getFileSizeDisplay(maxFileSize) }}</small>
+        </div>
+      </div>
+
+      <!-- Drag Over State -->
+      <div class="drop-zone-content drag-state" *ngIf="isDragOver()">
+        <mat-icon class="upload-icon animated">file_upload</mat-icon>
+        <h4>Drop file to upload</h4>
+      </div>
+
+      <!-- File Selected State -->
+      <div class="drop-zone-content file-selected" *ngIf="hasSelectedFile()">
+        <mat-icon class="file-icon">description</mat-icon>
+        <h4>{{ selectedFile()!.name }}</h4>
+        <p>{{ getFileSizeDisplay(selectedFile()!.size) }}</p>
+        
+        <!-- File Preview -->
+        <div class="file-preview" *ngIf="previewUrl()">
+          <img 
+            [src]="previewUrl()!" 
+            alt="Logo preview"
+            class="preview-image"
+            *ngIf="!isSvgFile()">
+          <div class="svg-preview" *ngIf="isSvgFile()">
+            <mat-icon>code</mat-icon>
+            <span>SVG File</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Validation Errors -->
+    <div class="validation-errors" *ngIf="validationErrors().length > 0">
+      <mat-icon color="warn">error</mat-icon>
+      <div class="error-list">
+        <p *ngFor="let error of validationErrors()" class="error-message">
+          {{ error }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Upload Progress -->
+    <div class="upload-progress" *ngIf="isUploading()">
+      <mat-progress-bar 
+        mode="determinate" 
+        [value]="uploadProgressValue()"
+        aria-label="Upload progress">
+      </mat-progress-bar>
+      <span class="progress-text">{{ uploadProgressValue() }}%</span>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons" *ngIf="hasSelectedFile()">
+      <button 
+        mat-button
+        (click)="clearSelection()"
+        [disabled]="isUploading()"
+        aria-label="Clear selected file">
+        <mat-icon>clear</mat-icon>
+        Clear
+      </button>
+
+      <button 
+        mat-button
+        color="accent"
+        (click)="openCropper()"
+        [disabled]="!isImageFile() || isUploading()"
+        *ngIf="isImageFile()"
+        aria-label="Crop image">
+        <mat-icon>crop</mat-icon>
+        Crop
+      </button>
+
+      <button 
+        mat-raised-button
+        color="primary"
+        (click)="uploadFile()"
+        [disabled]="!canUpload()"
+        [class.loading]="isUploading()"
+        aria-label="Upload logo">
+        <mat-spinner diameter="20" *ngIf="isUploading()"></mat-spinner>
+        <mat-icon *ngIf="!isUploading()">upload</mat-icon>
+        <span>{{ isUploading() ? 'Uploading...' : 'Upload' }}</span>
+      </button>
+    </div>
+
+    <!-- Additional Options -->
+    <div class="additional-options" *ngIf="!hasSelectedFile() && !isUploading()">
+      <button 
+        mat-button
+        (click)="openFilePicker()"
+        aria-label="Browse files">
+        <mat-icon>folder_open</mat-icon>
+        Browse Files
+      </button>
+
+      <button 
+        mat-button
+        (click)="openGallery()"
+        *ngIf="showGallery"
+        aria-label="Select from gallery">
+        <mat-icon>photo_library</mat-icon>
+        Gallery
+      </button>
+
+      <button 
+        mat-button
+        [matMenuTriggerFor]="optionsMenu"
+        aria-label="More options">
+        <mat-icon>more_vert</mat-icon>
+        Options
+      </button>
+    </div>
+  </div>
+
+  <!-- Image Cropper Dialog -->
+  <app-image-cropper
+    *ngIf="showCropper()"
+    [imageFile]="selectedFile()!"
+    [aspectRatio]="cropAspectRatio"
+    (imageCropped)="onImageCropped($event)"
+    (cropperClosed)="onCropperClosed()">
+  </app-image-cropper>
+
+  <!-- Logo Gallery Dialog -->
+  <app-logo-gallery
+    *ngIf="showGallery()"
+    (logoSelected)="onLogoSelectedFromGallery($event)"
+    (galleryClosed)="onGalleryClosed()">
+  </app-logo-gallery>
+</div>
+
+<!-- Options Menu -->
+<mat-menu #optionsMenu="matMenu" aria-label="Upload options">
+  <button mat-menu-item disabled>
+    <mat-icon>info</mat-icon>
+    <span>Upload Tips</span>
+  </button>
+  
+  <mat-divider></mat-divider>
+  
+  <button mat-menu-item disabled>
+    <mat-icon>check_circle</mat-icon>
+    <span>Use square images for best results</span>
+  </button>
+  
+  <button mat-menu-item disabled>
+    <mat-icon>check_circle</mat-icon>
+    <span>SVG format recommended</span>
+  </button>
+  
+  <button mat-menu-item disabled>
+    <mat-icon>check_circle</mat-icon>
+    <span>Transparent backgrounds work best</span>
+  </button>
+  
+  <button mat-menu-item disabled>
+    <mat-icon>check_circle</mat-icon>
+    <span>High contrast colors preferred</span>
+  </button>
+  
+  <mat-divider></mat-divider>
+  
+  <button mat-menu-item (click)="reset()">
+    <mat-icon>refresh</mat-icon>
+    <span>Reset</span>
+  </button>
+</mat-menu>
